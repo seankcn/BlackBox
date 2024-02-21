@@ -15,7 +15,7 @@ public class boardAttempt extends Application {
 
     private Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
-        hex.getPoints().addAll(new Double[]{
+        hex.getPoints().addAll(new Double[]{ // set dimensions
                 x, y-20,
                 x+17, y-10,
                 x+17, y+10,
