@@ -1,5 +1,8 @@
 import javafx.application.Application;
+import javafx.event.ActionEvent;
+import javafx.event.EventHandler;
 import javafx.scene.Group;
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
@@ -11,7 +14,9 @@ import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
-public class boardAttempt extends Application {
+public class boardAttempt extends Application implements EventHandler<ActionEvent> {
+    StackPane sp = new StackPane(); // stackpane for centering group
+    Button startButton;
 
     private Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
@@ -44,7 +49,6 @@ public class boardAttempt extends Application {
         return g;
     }
     private Parent makeBoard() {
-        StackPane sp = new StackPane(); // stackpane for centering group
         Group g = new Group(); // group for hexagons and atoms
 
         Random rand = new Random(); // rand for randomly assigning atoms
@@ -78,6 +82,8 @@ public class boardAttempt extends Application {
             }
         }
         sp.getChildren().addAll(g); // add group to stackframe
+        Button button = setStartButton(); // creates the start button
+        sp.getChildren().add(button);
         return sp; // return stackframe
     }
 
@@ -86,8 +92,26 @@ public class boardAttempt extends Application {
     }
 
     @Override
-    public void start(Stage stage) throws Exception {
-        stage.setScene(new Scene(makeBoard(), 600, 600)); // build stage
-        stage.show(); // show
+    public void start(Stage primaryStage) throws Exception {
+        Scene scene = new Scene(makeBoard(), 600, 600);
+        primaryStage.setTitle("BlackBox+");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+    }
+
+    public Button setStartButton() { // creates the start button
+        startButton = new Button();
+        startButton.setText("Click to start!");
+        startButton.setTranslateY(-200);
+        startButton.setOnAction(this); // calls handle
+        return startButton;
+    }
+
+    @Override
+    public void handle(ActionEvent actionEvent) {
+        if(actionEvent.getSource() == startButton) {
+            Main.startOfGame(); // if the button is pressed, trigger the start of the game
+            startButton.setVisible(false);
+        }
     }
 }
