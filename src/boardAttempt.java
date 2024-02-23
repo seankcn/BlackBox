@@ -1,6 +1,7 @@
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
@@ -82,10 +83,10 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 count++;
             }
         }
-        sp.getChildren().addAll(g); // add group to stackframe
+        sp.getChildren().addAll(g); // add group to stackpane
         Button button = setStartButton(); // creates the start button
         sp.getChildren().add(button);
-        return sp; // return stackframe
+        return sp; // return stackpane
     }
 
     public static void main(String[] args) {
@@ -114,7 +115,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     }
 
     private void rayInput() {
-        Group group = new Group();
+        StackPane sPane = new StackPane();
         TextField input = new TextField("");
         //input.setAlignment(Pos.BOTTOM_CENTER);
         input.setMaxWidth(100);
@@ -125,8 +126,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             input.clear();
         };
         input.setOnAction(event);
-        group.getChildren().add(input);
-        sp.getChildren().add(group);
+        sPane.getChildren().add(input);
+        sPane.setAlignment(Pos.BOTTOM_CENTER);
+        sp.getChildren().add(sPane);
     }
 
     @Override
