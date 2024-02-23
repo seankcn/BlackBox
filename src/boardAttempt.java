@@ -4,6 +4,7 @@ import javafx.event.EventHandler;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.stage.Stage;
@@ -99,19 +100,37 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.show();
     }
 
-    public Button setStartButton() { // creates the start button
+    private Button setStartButton() { // creates the start button
         startButton = new Button();
         startButton.setText("Click to start!");
         startButton.setTranslateY(-200);
-        startButton.setOnAction(this); // calls handle
+        EventHandler<ActionEvent> event = actionEvent -> {
+            Main.startOfGame();
+            startButton.setVisible(false);
+            rayInput();
+        };
+        startButton.setOnAction(event);
         return startButton;
     }
 
+    private void rayInput() {
+        Group group = new Group();
+        TextField input = new TextField("");
+        //input.setAlignment(Pos.BOTTOM_CENTER);
+        input.setMaxWidth(100);
+        input.setLayoutY(200);
+        EventHandler<ActionEvent> event = actionEvent -> {
+            Label label = new Label(input.getText());
+            System.out.println(label.getText());
+            input.clear();
+        };
+        input.setOnAction(event);
+        group.getChildren().add(input);
+        sp.getChildren().add(group);
+    }
+
     @Override
-    public void handle(ActionEvent actionEvent) {
-        if(actionEvent.getSource() == startButton) {
-            Main.startOfGame(); // if the button is pressed, trigger the start of the game
-            startButton.setVisible(false);
-        }
+    public void handle(ActionEvent actionEvent) { // have to implement this method because of EventHandler
+
     }
 }
