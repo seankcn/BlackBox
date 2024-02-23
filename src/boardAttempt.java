@@ -18,7 +18,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     StackPane sp = new StackPane(); // stackpane for centering group
     Button startButton;
 
-    private Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
+    public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
         hex.getPoints().addAll(new Double[]{ // set dimensions
                 x, y-20,
@@ -32,7 +32,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         hex.setViewOrder(0);
         return hex;
     }
-    private Parent createAtom(double x, double y){
+    public Parent createAtom(double x, double y){
         Group g = new Group(); // group together atom and radius
         Circle radius = new Circle();
         radius.setCenterX(x);
@@ -48,7 +48,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         return g;
     }
-    private Parent makeBoard() {
+    public Parent makeBoard() {
         Group g = new Group(); // group for hexagons and atoms
 
         Random rand = new Random(); // rand for randomly assigning atoms
