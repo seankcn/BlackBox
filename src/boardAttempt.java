@@ -60,11 +60,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         Random rand = new Random(); // rand for randomly assigning atoms
         Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
         while(myatoms.size() < 4){myatoms.add(rand.nextInt(61));} // add atoms until done
+        for(int i = 0; i < board.length; i++) {Arrays.fill(board[i], 'n');} // fill board model
 
         Integer count = 0;
         double x, y;
         int coordx, coordy;
-        for(int i = 0; i < board.length; i++) {Arrays.fill(board[i], 'n');}
         for(int i = 0; i < 9; i++) { // iterate through rows
             double k = 4 - Math.abs(4-i); // find how many columns for this row
             for (double j = 0; j < 5+k; j++) { // iterate through columns
@@ -89,15 +89,12 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                     g.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
                     board[coordx][coordy] = 'a';
                 }else{
-                    board[coordx][coordy] = 'e';
+                    board[coordx][coordy] = 'e'; // populate model
                 }
                 count++;
             }
         }
-        sp.getChildren().addAll(g); // add group to stackpane
-        Button button = setStartButton(); // creates the start button
-        sp.getChildren().add(button);
-        return sp; // return stackpane
+        return g; // return group
     }
 
     public static void main(String[] args) {
@@ -106,7 +103,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
     @Override
     public void start(Stage primaryStage) throws Exception {
-        Scene scene = new Scene(makeBoard(), 600, 600);
+        sp.getChildren().addAll(makeBoard()); // add group to stackpane
+        Button button = setStartButton(); // creates the start button
+        sp.getChildren().add(button);
+
+        Scene scene = new Scene(sp, 600, 600);
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -116,6 +117,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         Button startButton = new Button();
         startButton.setText("Click to start!");
         startButton.setTranslateY(-200);
+        startButton.setViewOrder(-2);
         EventHandler<ActionEvent> event = actionEvent -> {
             Main.startOfGame();
             startButton.setVisible(false);
@@ -126,9 +128,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     }
 
     private void rayInput() {
-        StackPane sPane = new StackPane();
+        StackPane sPane = new StackPane(); // stackpane for changing alignment
         TextField input = new TextField("");
-        //input.setAlignment(Pos.BOTTOM_CENTER);
+        input.setViewOrder(-2);
         input.setMaxWidth(100);
         input.setLayoutY(200);
         EventHandler<ActionEvent> event = actionEvent -> {
