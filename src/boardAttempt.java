@@ -12,23 +12,27 @@ import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.shape.*;
+
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
 
 public class boardAttempt extends Application implements EventHandler<ActionEvent> {
     StackPane sp = new StackPane(); // stackpane for centering group
-    Button startButton;
+    char[][] board = new char[9][9];
+    double hexRadius = 15; // can change size of everything by altering this variable
+    double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
 
     public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
         hex.getPoints().addAll(new Double[]{ // set dimensions
-                x, y-20,
-                x+17, y-10,
-                x+17, y+10,
-                x, y+20,
-                x-17, y+10,
-                x-17, y-10});
+                x, y-(2*hexRadius),
+                x+edge, y-hexRadius,
+                x+edge, y+hexRadius,
+                x, y+(2*hexRadius),
+                x-edge, y+hexRadius,
+                x-edge, y-hexRadius});
         hex.setFill(Color.BLUE);
         hex.setStroke(Color.BLACK);
         hex.setViewOrder(0);
@@ -39,13 +43,13 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         Circle radius = new Circle();
         radius.setCenterX(x);
         radius.setCenterY(y);
-        radius.setRadius(35);
+        radius.setRadius(2*edge);
         radius.setFill(Color.TRANSPARENT); // make internals transparent
         radius.setStroke(Color.BLACK);
         Circle atom = new Circle();
         atom.setCenterX(x);
         atom.setCenterY(y);
-        atom.setRadius(10);
+        atom.setRadius(hexRadius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         return g;
@@ -59,18 +63,22 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
         Integer count = 0;
         double x, y;
+        int coordx, coordy;
+        for(int i = 0; i < board.length; i++) {Arrays.fill(board[i], 'n');}
         for(int i = 0; i < 9; i++) { // iterate through rows
-            double k = 4 - Math.abs(4-i); // find how many hexagons for this row
+            double k = 4 - Math.abs(4-i); // find how many columns for this row
             for (double j = 0; j < 5+k; j++) { // iterate through columns
-                x = (j + 2 - (k/2)) * 34; // set x pos
-                y = i * 30; // set y pos
+                x = (j + 2 - (k/2)) * 2*edge; // set x pos
+                y = i * 3 * hexRadius; // set y pos
 
                 Label coords = new Label();
+                coordx = i;
                 if(i < 5) {
-                    coords.setText(i + " " + (int) j);
+                    coordy = (int) j;
                 }else{
-                    coords.setText(i + " " + (int) (j-k+4));
+                    coordy = (int) (j-k+4);
                 }
+                coords.setText(coordx + " " + coordy);
                 coords.setLayoutX(x);
                 coords.setLayoutY(y);
                 coords.setViewOrder(-1); // label each hexagon for development purposes
@@ -79,6 +87,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
                 if(myatoms.contains(count)){ // if atom should be here
                     g.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
+                    board[coordx][coordy] = 'a';
+                }else{
+                    board[coordx][coordy] = 'e';
                 }
                 count++;
             }
@@ -102,7 +113,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     }
 
     private Button setStartButton() { // creates the start button
-        startButton = new Button();
+        Button startButton = new Button();
         startButton.setText("Click to start!");
         startButton.setTranslateY(-200);
         EventHandler<ActionEvent> event = actionEvent -> {
