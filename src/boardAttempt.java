@@ -111,6 +111,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        getAtomCoordinates();
     }
 
     private Button setStartButton() { // creates the start button
@@ -147,5 +149,27 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     @Override
     public void handle(ActionEvent actionEvent) { // have to implement this method because of EventHandler
 
+    }
+
+    public boolean hasAtom(int i, int j){
+        return (board[i][j] == 'a');
+    }
+    public void getAtomCoordinates(){
+        for(int i = 0; i<9; i++){
+            double k = 4 - Math.abs(4-i);
+            for (double j = 0; j < 5+k; j++) {
+                int coordy;
+
+                if(i < 5) {
+                    coordy = (int) j;
+                }else{
+                    coordy = (int) (j-k+4);
+                }
+                boolean x = hasAtom(i, coordy);
+                if(x){
+                    System.out.println("There is an atom at (" + i + ", " + coordy + ")");
+                }
+            }
+        }
     }
 }
