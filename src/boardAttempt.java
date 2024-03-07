@@ -1,6 +1,7 @@
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.control.Button;
@@ -11,6 +12,12 @@ import javafx.scene.layout.Background;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Polygon;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
+import javafx.scene.robot.Robot;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
@@ -26,9 +33,27 @@ import static java.lang.Math.*;
 
 public class boardAttempt extends Application implements EventHandler<ActionEvent> {
     StackPane sp = new StackPane(); // stackpane for centering group
+    Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
+    int atomNum = 0;
     char[][] board = new char[9][9];
     double hexRadius = 15; // can change size of everything by altering this variable
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
+
+    @Override
+    public void start(Stage primaryStage) throws Exception {
+        Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
+        sp.getChildren().addAll(makeBoard()); // add group to stackpane
+        Button button = setStartButton(); // creates the start button
+        sp.getChildren().add(button);
+
+        Scene scene = new Scene(sp, 600, 600);
+        sp.setBackground(spBackground); // Background needed to change the background color because sp blocks the scene
+        primaryStage.setTitle("BlackBox+");
+        primaryStage.setScene(scene);
+        primaryStage.show();
+
+        getAtomCoordinates();
+    }
 
     public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
@@ -39,8 +64,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 x, y+(2*hexRadius),
                 x-edge, y+hexRadius,
                 x-edge, y-hexRadius});
-        hex.setFill(Color.BLUE);
-        hex.setStroke(Color.BLACK);
+        hex.setFill(Color.BLACK);
+        hex.setStroke(Color.YELLOW);
         hex.setViewOrder(0);
         return hex;
     }
@@ -51,14 +76,18 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         radius.setCenterY(y);
         radius.setRadius(2*edge);
         radius.setFill(Color.TRANSPARENT); // make internals transparent
-        radius.setStroke(Color.BLACK);
+        radius.setStroke(Color.GOLD);
         Circle atom = new Circle();
+        atom.setFill(Color.RED);
+        atom.setStroke(Color.BLACK);
         atom.setCenterX(x);
         atom.setCenterY(y);
         atom.setRadius(hexRadius);
+        radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         g.setVisible(false); // hide atoms
+        atomNum++;
         return g;
     }
     public Parent createIn(double xto, double yto, double xfrom, double yfrom, int num, int row, int col){
@@ -144,21 +173,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
     public static void main(String[] args) {
         launch(args);
-    }
-
-    @Override
-    public void start(Stage primaryStage) throws Exception {
-        sp.getChildren().addAll(makeBoard()); // add group to stackpane
-        Button button = setStartButton(); // creates the start button
-        sp.getChildren().add(button);
-
-
-        Scene scene = new Scene(sp, 600, 600);
-        primaryStage.setTitle("BlackBox+");
-        primaryStage.setScene(scene);
-        primaryStage.show();
-
-        getAtomCoordinates();
     }
 
     private Button setStartButton() { // creates the start button
@@ -282,5 +296,39 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 createIn(x, y, x+e1, y+e2, myin2--, row, col));
         }
         return outerHexG;
+    }
+
+    // TODO
+    public double[] shootRay(double x, double y, double deltaX, double deltaY) {
+        Robot robot = new Robot();
+        double xAtomCenter, yAtomCenter;
+        boolean reachedBorder = false;
+        while(!reachedBorder) {
+            if(robot.getPixelColor(x, y) == Color.GOLD) { // Ray has collided with an atom radii
+                // change deltas depending on current delta values
+                for(int j = 0; j < atomNum; j++) { // check which atom the ray collided with
+                    Circle temp = (Circle) radiiOfAtoms.getChildren().get(j);
+                    if(radiiOfAtoms.getChildren().get(j).contains(x, y)) {
+                        System.out.println("Bounce at atom " + j);
+                        xAtomCenter = temp.getCenterX();
+                        yAtomCenter = temp.getCenterY();
+                        if(yAtomCenter - y == 0) { // cases for ray reflection
+                            deltaX *= -1;
+                        } else if(xAtomCenter - x == 0) {
+                            deltaY *= -1;
+                        }
+                    }
+                }
+            } else {
+                 x += deltaX;
+                 y += deltaY;
+            }
+
+            if(robot.getPixelColor(x, y) == Color.DARKSLATEGREY) { // Ray has left the game board
+                reachedBorder = true;
+                System.out.println("miss");
+            }
+        }
+        return new double[]{x, y};
     }
 }
