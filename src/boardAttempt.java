@@ -54,6 +54,26 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         return g;
     }
+    public Parent createIn(double xto, double yto, double xfrom, double yfrom, int num){
+        Group g = new Group();
+        Polyline pl = new Polyline();
+        pl.getPoints().addAll(new Double[]{
+                xto,yto,
+                xfrom,yfrom});
+        pl.setFill(Color.BLACK);
+        pl.setStroke(Color.BLACK);
+        pl.setViewOrder(1);
+
+        Label label = new Label();
+        label.setLayoutX(xfrom);
+        label.setLayoutY(yfrom-12);
+        label.setText(String.valueOf(num));
+        label.setViewOrder(-1);
+
+        g.getChildren().addAll(pl, label);
+        g.setViewOrder(1);
+        return g;
+    }
     public Parent makeBoard() {
         Group g = new Group(); // group for hexagons and atoms
 
@@ -71,7 +91,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 x = (j + 2 - (k/2)) * 2*edge; // set x pos
                 y = i * 3 * hexRadius; // set y pos
 
-                Label coords = new Label();
+                Label coords = new Label(); // remove before final submission
                 coordx = i;
                 if(i < 5) {
                     coordy = (int) j;
@@ -106,6 +126,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         sp.getChildren().addAll(makeBoard()); // add group to stackpane
         Button button = setStartButton(); // creates the start button
         sp.getChildren().add(button);
+
 
         Scene scene = new Scene(sp, 600, 600);
         primaryStage.setTitle("BlackBox+");
