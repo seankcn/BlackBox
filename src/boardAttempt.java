@@ -198,121 +198,66 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
     int myin1 = 1;
     int myin2 = 54;
-    String stri = "1";
-    String strj = "54";
     //function to set labels on outersides of the board
     public Group setLabels(double x, double y, int row, int col){
         Group outerHexG = new Group();
+        double e1 = edge*0.75, e2 = edge*1.25;
 
         if(row != 8 && col == 0){ //upperleft 1,0 - 4,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-edge*0.75, y-edge*1.5, myin1++),
-                createIn(x, y, x-edge*1.5, y-edge*0.5, myin1++));
+                createIn(x, y, x-e1, y-e2, myin1++),
+                createIn(x, y, x-e2, y, myin1++)); //a
         }if(row == 4 && col == 0){ //4,0
             outerHexG.getChildren().addAll(
-                    createIn(x, y, x-edge, y+edge*0.75, myin1++));
+                createIn(x, y, x-e1, y+e2, myin1++));
         }
         for(int i = 5; i < 9; i++){ //bottomleft 4,0 - 8,4
             for(int j = 0; j < 5; j++){
                 if(row == i && col == j){
-                    Label side1 = new Label(stri);
-                    stri = incrementString(stri);
-                    Label side2 = new Label(stri);
-                    side1.setLayoutX(x-edge*1.5);
-                    side1.setLayoutY(y-edge*0.5);
-                    side2.setLayoutX(x-edge);
-                    side2.setLayoutY(y+edge*0.75);
-                    outerHexG.getChildren().addAll(side1,side2);
-                    stri = incrementString(stri);
+                    outerHexG.getChildren().addAll(
+                        createIn(x, y, x-e2, y, myin1++),
+                        createIn(x, y, x-e1, y+e2, myin1++));
                 }
             }
         }if(row == 8 && col == 4){ //8,4
-            Label side1 = new Label(stri);
-            stri = incrementString(stri);
-            side1.setLayoutX(x+edge*0.25);
-            side1.setLayoutY(y+edge*0.75);
-            outerHexG.getChildren().addAll(side1);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e1, y+e2, myin1++));
         }
         if(row == 8 && col != 4){ //bottom 8,5 - 8,8
-            Label side1 = new Label(stri);
-            stri = incrementString(stri);
-            Label side2 = new Label(stri);
-            side1.setLayoutX(x-edge*0.6);
-            side1.setLayoutY(y+edge*0.9);
-            side2.setLayoutX(x+edge*0.25);
-            side2.setLayoutY(y+edge*0.9);
-            outerHexG.getChildren().addAll(side1,side2);
-            stri = incrementString(stri);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x-e1, y+e2, myin1++),
+                createIn(x, y, x+e1, y+e2, myin1++));
         }if(col == 8 && row == 8){ //8,8
-            Label side1 = new Label(stri);
-            side1.setLayoutX(x+edge);
-            side1.setLayoutY(y);
-            outerHexG.getChildren().addAll(side1);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e2, y, myin1++));
         }if(row == 0 && col == 0){ //0,0
-            Label side1 = new Label(strj);
-            side1.setLayoutX(x+edge*0.25);
-            side1.setLayoutY(y-edge*1.5);
-            outerHexG.getChildren().addAll(side1);
-            strj = decrementString(strj);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e1, y-e2, myin2--));
         }
         if(row == 0 && col != 0){ //upper 0,0 - 0,4
-            Label side1 = new Label(strj);
-            strj = decrementString(strj);
-            Label side2 = new Label(strj);
-            side1.setLayoutX(x-edge*0.75);
-            side1.setLayoutY(y-edge*1.5);
-            side2.setLayoutX(x+edge*0.25);
-            side2.setLayoutY(y-edge*1.5);
-            outerHexG.getChildren().addAll(side1,side2);
-            strj = decrementString(strj);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x-e1, y-e2, myin2--),
+                createIn(x, y, x+e1, y-e2, myin2--));
         }if(row == 0 && col == 4){ //0,4
-            Label side1 = new Label(strj);
-            strj = decrementString(strj);
-            side1.setLayoutX(x+edge);
-            side1.setLayoutY(y-edge*0.5);
-            outerHexG.getChildren().addAll(side1);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e2, y, myin2--)); //a
         }
         for(int i = 1; i < 5; i++){ //upperright 1,5 - 4,8
             for(int j = 5; j < 9; j++){
                 if(row == i && col == j){
-                    Label side1 = new Label(strj);
-                    strj = decrementString(strj);
-                    Label side2 = new Label(strj);
-                    side1.setLayoutX(x+edge/2);
-                    side1.setLayoutY(y-edge*1.5);
-                    side2.setLayoutX(x+edge);
-                    side2.setLayoutY(y-edge*0.5);
-                    outerHexG.getChildren().addAll(side1,side2);
-                    strj = decrementString(strj);
+                    outerHexG.getChildren().addAll(
+                        createIn(x, y, x+e1, y-e2, myin2--),
+                        createIn(x, y, x+e2, y, myin2--));
                 }
             }
         }if(row == 4 && col == 8){ //4,8
-            Label side1 = new Label(strj);
-            strj = decrementString(strj);
-            side1.setLayoutX(x+edge/2);
-            side1.setLayoutY(y+edge*0.75);
-            outerHexG.getChildren().addAll(side1);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e1, y+e2, myin2--));
         }if(row != 8 && row != 4 && col == 8){ //bottomright 4,8 - 7,8
-            Label side1 = new Label(strj);
-            strj = decrementString(strj);
-            Label side2 = new Label(strj);
-            side1.setLayoutX(x+edge);
-            side1.setLayoutY(y-edge*0.5);
-            side2.setLayoutX(x+edge/2);
-            side2.setLayoutY(y+edge*0.75);
-            outerHexG.getChildren().addAll(side1,side2);
-            strj = decrementString(strj);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x+e2, y, myin2--),
+                createIn(x, y, x+e1, y+e2, myin2--));
         }
         return outerHexG;
-    }
-
-    public static String incrementString(String strNumber){
-        int number = Integer.parseInt(strNumber);
-        number++;
-        return Integer.toString(number);
-    }public static String decrementString(String strNumber){
-        int number = Integer.parseInt(strNumber);
-        number--;
-        return Integer.toString(number);
     }
 }
