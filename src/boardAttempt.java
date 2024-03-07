@@ -104,7 +104,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 coords.setViewOrder(-1); // label each hexagon for development purposes
 
                 g.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
-
+                if(i == 0 || i == 8 || j == 0 || j == 4 + k){ //outerHexagons, create labels for outersides
+                    g.getChildren().addAll(setLabels(x, y, coordx, coordy));
+                }
                 if(myatoms.contains(count)){ // if atom should be here
                     g.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
                     board[coordx][coordy] = 'a';
@@ -132,6 +134,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
+
+        getAtomCoordinates();
     }
 
     private Button setStartButton() { // creates the start button
@@ -168,5 +172,154 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     @Override
     public void handle(ActionEvent actionEvent) { // have to implement this method because of EventHandler
 
+    }
+
+    public boolean hasAtom(int i, int j){
+        return (board[i][j] == 'a');
+    }
+    public void getAtomCoordinates(){
+        for(int i = 0; i<9; i++){
+            double k = 4 - Math.abs(4-i);
+            for (double j = 0; j < 5+k; j++) {
+                int coordy;
+
+                if(i < 5) {
+                    coordy = (int) j;
+                }else{
+                    coordy = (int) (j-k+4);
+                }
+                boolean x = hasAtom(i, coordy);
+                if(x){
+                    System.out.println("There is an atom at (" + i + ", " + coordy + ")");
+                }
+            }
+        }
+    }
+
+    String stri = "1";
+    String strj = "54";
+    //function to set labels on outersides of the board
+    public Group setLabels(double x, double y, int row, int col){
+        Group outerHexG = new Group();
+
+        if(row != 8 && col == 0){ //upperleft 1,0 - 4,0
+            Label side1 = new Label(stri);
+            stri = incrementString(stri);
+            Label side2 = new Label(stri);
+            side1.setLayoutX(x-edge*0.75);
+            side1.setLayoutY(y-edge*1.5);
+            side2.setLayoutX(x-edge*1.5);
+            side2.setLayoutY(y-edge*0.5);
+            outerHexG.getChildren().addAll(side1,side2);
+            stri = incrementString(stri);
+        }if(row == 4 && col == 0){ //4,0
+            Label side1 = new Label(stri);
+            stri = incrementString(stri);
+            side1.setLayoutX(x-edge);
+            side1.setLayoutY(y+edge*0.75);
+            outerHexG.getChildren().addAll(side1);
+        }
+        for(int i = 5; i < 9; i++){ //bottomleft 4,0 - 8,4
+            for(int j = 0; j < 5; j++){
+                if(row == i && col == j){
+                    Label side1 = new Label(stri);
+                    stri = incrementString(stri);
+                    Label side2 = new Label(stri);
+                    side1.setLayoutX(x-edge*1.5);
+                    side1.setLayoutY(y-edge*0.5);
+                    side2.setLayoutX(x-edge);
+                    side2.setLayoutY(y+edge*0.75);
+                    outerHexG.getChildren().addAll(side1,side2);
+                    stri = incrementString(stri);
+                }
+            }
+        }if(row == 8 && col == 4){ //8,4
+            Label side1 = new Label(stri);
+            stri = incrementString(stri);
+            side1.setLayoutX(x+edge*0.25);
+            side1.setLayoutY(y+edge*0.75);
+            outerHexG.getChildren().addAll(side1);
+        }
+        if(row == 8 && col != 4){ //bottom 8,5 - 8,8
+            Label side1 = new Label(stri);
+            stri = incrementString(stri);
+            Label side2 = new Label(stri);
+            side1.setLayoutX(x-edge*0.6);
+            side1.setLayoutY(y+edge*0.9);
+            side2.setLayoutX(x+edge*0.25);
+            side2.setLayoutY(y+edge*0.9);
+            outerHexG.getChildren().addAll(side1,side2);
+            stri = incrementString(stri);
+        }if(col == 8 && row == 8){ //8,8
+            Label side1 = new Label(stri);
+            side1.setLayoutX(x+edge);
+            side1.setLayoutY(y);
+            outerHexG.getChildren().addAll(side1);
+        }if(row == 0 && col == 0){ //0,0
+            Label side1 = new Label(strj);
+            side1.setLayoutX(x+edge*0.25);
+            side1.setLayoutY(y-edge*1.5);
+            outerHexG.getChildren().addAll(side1);
+            strj = decrementString(strj);
+        }
+        if(row == 0 && col != 0){ //upper 0,0 - 0,4
+            Label side1 = new Label(strj);
+            strj = decrementString(strj);
+            Label side2 = new Label(strj);
+            side1.setLayoutX(x-edge*0.75);
+            side1.setLayoutY(y-edge*1.5);
+            side2.setLayoutX(x+edge*0.25);
+            side2.setLayoutY(y-edge*1.5);
+            outerHexG.getChildren().addAll(side1,side2);
+            strj = decrementString(strj);
+        }if(row == 0 && col == 4){ //0,4
+            Label side1 = new Label(strj);
+            strj = decrementString(strj);
+            side1.setLayoutX(x+edge);
+            side1.setLayoutY(y-edge*0.5);
+            outerHexG.getChildren().addAll(side1);
+        }
+        for(int i = 1; i < 5; i++){ //upperright 1,5 - 4,8
+            for(int j = 5; j < 9; j++){
+                if(row == i && col == j){
+                    Label side1 = new Label(strj);
+                    strj = decrementString(strj);
+                    Label side2 = new Label(strj);
+                    side1.setLayoutX(x+edge/2);
+                    side1.setLayoutY(y-edge*1.5);
+                    side2.setLayoutX(x+edge);
+                    side2.setLayoutY(y-edge*0.5);
+                    outerHexG.getChildren().addAll(side1,side2);
+                    strj = decrementString(strj);
+                }
+            }
+        }if(row == 4 && col == 8){ //4,8
+            Label side1 = new Label(strj);
+            strj = decrementString(strj);
+            side1.setLayoutX(x+edge/2);
+            side1.setLayoutY(y+edge*0.75);
+            outerHexG.getChildren().addAll(side1);
+        }if(row != 8 && row != 4 && col == 8){ //bottomright 4,8 - 7,8
+            Label side1 = new Label(strj);
+            strj = decrementString(strj);
+            Label side2 = new Label(strj);
+            side1.setLayoutX(x+edge);
+            side1.setLayoutY(y-edge*0.5);
+            side2.setLayoutX(x+edge/2);
+            side2.setLayoutY(y+edge*0.75);
+            outerHexG.getChildren().addAll(side1,side2);
+            strj = decrementString(strj);
+        }
+        return outerHexG;
+    }
+
+    public static String incrementString(String strNumber){
+        int number = Integer.parseInt(strNumber);
+        number++;
+        return Integer.toString(number);
+    }public static String decrementString(String strNumber){
+        int number = Integer.parseInt(strNumber);
+        number--;
+        return Integer.toString(number);
     }
 }
