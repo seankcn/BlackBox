@@ -6,17 +6,23 @@ import javafx.scene.Group;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
+import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Background;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Polygon;
 import javafx.stage.Stage;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.shape.*;
 
+import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
 import java.util.Set;
+
+import static java.lang.Math.*;
 
 public class boardAttempt extends Application implements EventHandler<ActionEvent> {
     StackPane sp = new StackPane(); // stackpane for centering group
@@ -52,9 +58,10 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         atom.setRadius(hexRadius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
+        g.setVisible(false); // hide atoms
         return g;
     }
-    public Parent createIn(double xto, double yto, double xfrom, double yfrom, int num){
+    public Parent createIn(double xto, double yto, double xfrom, double yfrom, int num, int row, int col){
         Group g = new Group();
         Polyline pl = new Polyline();
         pl.getPoints().addAll(new Double[]{
@@ -66,9 +73,25 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
         Label label = new Label();
         label.setLayoutX(xfrom);
-        label.setLayoutY(yfrom-12);
+        label.setLayoutY(yfrom-10);
         label.setText(String.valueOf(num));
-        label.setViewOrder(-1);
+        label.setViewOrder(-2);
+        label.setBackground(Background.fill(Color.WHITE));
+        StringBuilder myid = new StringBuilder(row + "," + col + "," + (int)signum(yto-yfrom) + ",");
+        if(yto == yfrom){
+            myid.append((int)signum(xto-xfrom));
+        }else if(yto > yfrom){
+            myid.append((int)max(0.0, signum(xto-xfrom)));
+        }else{
+            myid.append((int)min(0.0, signum(xto-xfrom)));
+        }
+        label.setId(myid.toString());
+        label.setOnMouseClicked(new EventHandler<MouseEvent>() {
+            @Override
+            public void handle(MouseEvent mouseEvent) {
+                System.out.println(label.getId());
+            }
+        });
 
         g.getChildren().addAll(pl, label);
         g.setViewOrder(1);
@@ -105,7 +128,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
                 g.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
                 if(i == 0 || i == 8 || j == 0 || j == 4 + k){ //outerHexagons, create labels for outersides
-                    g.getChildren().addAll(setLabels(x, y, coordx, coordy));
+                    g.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
                 }
                 if(myatoms.contains(count)){ // if atom should be here
                     g.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
@@ -205,58 +228,58 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
         if(row != 8 && col == 0){ //upperleft 1,0 - 4,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y-e2, myin1++),
-                createIn(x, y, x-e2, y, myin1++)); //a
+                createIn(x, y, x-e1, y-e2, myin1++, row, col),
+                createIn(x, y, x-e1-e1, y, myin1++, row, col)); //a
         }if(row == 4 && col == 0){ //4,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y+e2, myin1++));
+                createIn(x, y, x-e1, y+e2, myin1++, row, col));
         }
         for(int i = 5; i < 9; i++){ //bottomleft 4,0 - 8,4
             for(int j = 0; j < 5; j++){
                 if(row == i && col == j){
                     outerHexG.getChildren().addAll(
-                        createIn(x, y, x-e2, y, myin1++),
-                        createIn(x, y, x-e1, y+e2, myin1++));
+                        createIn(x, y, x-e1-e1, y, myin1++, row, col),
+                        createIn(x, y, x-e1, y+e2, myin1++, row, col));
                 }
             }
         }if(row == 8 && col == 4){ //8,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1, y+e2, myin1++));
+                createIn(x, y, x+e1/2, y+e2, myin1++, row, col));
         }
         if(row == 8 && col != 4){ //bottom 8,5 - 8,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y+e2, myin1++),
-                createIn(x, y, x+e1, y+e2, myin1++));
+                createIn(x, y, x-e1, y+e1+e1, myin1++, row, col),
+                createIn(x, y, x+e1/2, y+e1+e1, myin1++, row, col));
         }if(col == 8 && row == 8){ //8,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin1++));
+                createIn(x, y, x+e2, y, myin1++, row, col));
         }if(row == 0 && col == 0){ //0,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1, y-e2, myin2--));
+                createIn(x, y, x+e1/2, y-e2, myin2--, row, col));
         }
         if(row == 0 && col != 0){ //upper 0,0 - 0,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y-e2, myin2--),
-                createIn(x, y, x+e1, y-e2, myin2--));
+                createIn(x, y, x-e1, y-e1-e1, myin2--, row, col),
+                createIn(x, y, x+e1/2, y-e1-e1, myin2--, row, col));
         }if(row == 0 && col == 4){ //0,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin2--)); //a
+                createIn(x, y, x+e2, y, myin2--, row, col)); //a
         }
         for(int i = 1; i < 5; i++){ //upperright 1,5 - 4,8
             for(int j = 5; j < 9; j++){
                 if(row == i && col == j){
                     outerHexG.getChildren().addAll(
-                        createIn(x, y, x+e1, y-e2, myin2--),
-                        createIn(x, y, x+e2, y, myin2--));
+                        createIn(x, y, x+e1, y-e2, myin2--, row, col),
+                        createIn(x, y, x+e2, y, myin2--, row, col));
                 }
             }
         }if(row == 4 && col == 8){ //4,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1, y+e2, myin2--));
+                createIn(x, y, x+e1, y+e2, myin2--, row, col));
         }if(row != 8 && row != 4 && col == 8){ //bottomright 4,8 - 7,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin2--),
-                createIn(x, y, x+e1, y+e2, myin2--));
+                createIn(x, y, x+e2, y, myin2--, row, col),
+                createIn(x, y, x+e1, y+e2, myin2--, row, col));
         }
         return outerHexG;
     }
