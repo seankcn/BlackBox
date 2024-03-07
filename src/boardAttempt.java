@@ -196,6 +196,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
     }
 
+    int myin1 = 1;
+    int myin2 = 54;
     String stri = "1";
     String strj = "54";
     //function to set labels on outersides of the board
@@ -203,21 +205,12 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         Group outerHexG = new Group();
 
         if(row != 8 && col == 0){ //upperleft 1,0 - 4,0
-            Label side1 = new Label(stri);
-            stri = incrementString(stri);
-            Label side2 = new Label(stri);
-            side1.setLayoutX(x-edge*0.75);
-            side1.setLayoutY(y-edge*1.5);
-            side2.setLayoutX(x-edge*1.5);
-            side2.setLayoutY(y-edge*0.5);
-            outerHexG.getChildren().addAll(side1,side2);
-            stri = incrementString(stri);
+            outerHexG.getChildren().addAll(
+                createIn(x, y, x-edge*0.75, y-edge*1.5, myin1++),
+                createIn(x, y, x-edge*1.5, y-edge*0.5, myin1++));
         }if(row == 4 && col == 0){ //4,0
-            Label side1 = new Label(stri);
-            stri = incrementString(stri);
-            side1.setLayoutX(x-edge);
-            side1.setLayoutY(y+edge*0.75);
-            outerHexG.getChildren().addAll(side1);
+            outerHexG.getChildren().addAll(
+                    createIn(x, y, x-edge, y+edge*0.75, myin1++));
         }
         for(int i = 5; i < 9; i++){ //bottomleft 4,0 - 8,4
             for(int j = 0; j < 5; j++){
