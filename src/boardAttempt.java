@@ -43,8 +43,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
         sp.getChildren().addAll(makeBoard()); // add group to stackpane
-        Button button = setStartButton(); // creates the start button
-        sp.getChildren().add(button);
+        //Button button = setStartButton(); // creates the start button
+        //sp.getChildren().add(button);
+        System.out.println("Click entry points to shoot rays");
 
         Scene scene = new Scene(sp, 600, 600);
         sp.setBackground(spBackground); // Background needed to change the background color because sp blocks the scene
@@ -105,7 +106,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         label.setLayoutY(yfrom-10);
         label.setText(String.valueOf(num));
         label.setViewOrder(-2);
-        label.setBackground(Background.fill(Color.WHITE));
+        label.setBackground(Background.fill(Color.DARKSLATEGREY));
+        label.setTextFill(Color.BLACK);
         StringBuilder myid = new StringBuilder(row + "," + col + "," + (int)signum(yto-yfrom) + ",");
         if(yto == yfrom){
             myid.append((int)signum(xto-xfrom));
@@ -119,6 +121,12 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             @Override
             public void handle(MouseEvent mouseEvent) {
                 System.out.println(label.getId());
+                String[] nums = label.getId().split(",");
+                int[] myargs = new int[4];
+                for(int i = 0; i < 4; i++){
+                    myargs[i] = Integer.parseInt(nums[i]);
+                }
+                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
             }
         });
 
