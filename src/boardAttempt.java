@@ -324,23 +324,24 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         while(!rayStopped) { // need to check every surrounding hex for atoms
             for(int i = -1; i < 2; i++) { // row
                 for(int j = -1; j < 1; j++) { // 'column'
-                    // 0, 1 atom at (1,2)
-                    if(x + j < 9 && x + j >=0 && y + i < 9 && y + i >= 0) {
+                    if(x + j < 9 && x + j >=0 && y + i < 9 && y + i >= 0) { // doesn't hit from top right
                         //System.out.println("    " + i + " " + j);
                         if(hasAtom((int) x + j, (int) y + i)) {
-                            System.out.println("Hit at x: " + (x) + " y:" + (y));
+                            System.out.println("Hit at x: " + (x) + " y: " + (y));
                             rayStopped = true;
                             break;
                         }
                     }
+
                     if(i == 0 && j == 0 && y - 1 < 9 && y - 1 >= 0) {
                         if(hasAtom((int) x, (int) y - 1)) {
-                            System.out.println("this is meant to be on the second row when we have to check 3 hexagons instead of 2");
+                            System.out.println("Hit at x: " + (x) + "y: " + (y));
+                            rayStopped = true;
+                            break;
                         }
                     }
                 }
             }
-            System.out.println("new hex \n");
 
             x += deltaX;
             y += deltaY;
