@@ -15,7 +15,6 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
-import javafx.scene.robot.Robot;
 import javafx.scene.shape.Circle;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
@@ -33,7 +32,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
     Group hexagons = new Group(); // group for hexagons and atoms
     int atomNum = 0;
-    char[][] board = new char[9][9];
+    char[][] board = new char[11][11];
     double hexRadius = 15; // can change size of everything by altering this variable
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
 
@@ -85,7 +84,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
-        g.setVisible(false); // hide atoms
+        //g.setVisible(false); // hide atoms
         atomNum++;
         return g;
     }
@@ -118,13 +117,13 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         label.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                System.out.println(label.getId());
+                //System.out.println(label.getId());
                 String[] nums = label.getId().split(",");
                 int[] myargs = new int[4];
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
+                shootRay2(myargs[0], myargs[1], myargs[2], myargs[3]);
             }
         });
 
@@ -165,14 +164,29 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 }
                 if(myatoms.contains(count)){ // if atom should be here
                     hexagons.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
-                    board[coordx][coordy] = 'a';
+                    board[coordx+1][coordy+1] = 'a';
                 }else{
-                    board[coordx][coordy] = 'e'; // populate model
+                    board[coordx+1][coordy+1] = 'e'; // populate model with empty hexagons
                 }
                 count++;
             }
         }
+        makeFields(board);
         return hexagons; // return group
+    }
+    public void makeFields(final char[][] list){ // add fields to board model
+        for(int i = 1; i < list.length-1; i++){
+            for(int j = 1; j < list.length-1; j++){
+                if(list[i][j] == 'a'){
+                    if(list[i-1][j] == 'e'){ list[i-1][j] = 'f';}
+                    if(list[i][j-1] == 'e'){ list[i][j-1] = 'f';}
+                    if(list[i][j-1] == 'e' && list[i-1][j] == 'e'){ list[i-1][j-1] = 'f';}
+                    if(list[i+1][j] == 'e'){ list[i+1][j] = 'f';}
+                    if(list[i][j+1] == 'e'){ list[i][j+1] = 'f';}
+                    if(list[i][j+1] == 'e' && list[i+1][j] == 'e'){ list[i+1][j+1] = 'f';}
+                }
+            }
+        }
     }
 
     public static void main(String[] args) {
@@ -239,7 +253,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
     int myin1 = 1;
     int myin2 = 54;
-    //function to set labels on outersides of the board
+    //function to set labels on outsides of the board
     public Group setLabels(double x, double y, int row, int col){
         Group outerHexG = new Group();
         double e1 = edge*0.75, e2 = edge*1.25;
@@ -337,5 +351,24 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
 
         return new double[]{x, y};
+    }
+    public void shootRay2(int x, int y, int i, int j){
+        int xpos = x+1;
+        int ypos = y+1;
+        while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
+            xpos+=i; // move
+            ypos+=j;
+        }
+        if(board[xpos][ypos] == 'n'){ // if at null space, then exited
+            System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
+        }
+        if(board[xpos][ypos] == 'f'){ // hit field
+            if(board[xpos+i][ypos+j] == 'a'){ // if heading towards atom, hit
+                System.out.println("DIRECT HIT");
+            }else{
+                System.out.println("bounced"); // bounce off field
+                //shootRay2(new values) // recursive call until absorbed or exit box
+            }
+        }
     }
 }
