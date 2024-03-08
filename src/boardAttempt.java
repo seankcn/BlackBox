@@ -310,11 +310,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         while(!rayStopped) { // need to check every surrounding hex for atoms
             for(int i = -1; i < 2; i++) { // row
                 for(int j = -1; j < 1; j++) { // 'column'
-                    // check
-                    if(x + i < 9 && x + i >=0 && y + j < 9 && y + j >= 0) {
+                    // 0, 1 atom at (1,2)
+                    if(x + j < 9 && x + j >=0 && y + i < 9 && y + i >= 0) {
                         //System.out.println("    " + i + " " + j);
-                        if(hasAtom((int) x + i, (int) y + j)) {
-                            System.out.println("Hit at x: " + (x + i) + " y:" + (y + j));
+                        if(hasAtom((int) x + j, (int) y + i)) {
+                            System.out.println("Hit at x: " + (x) + " y:" + (y));
                             rayStopped = true;
                             break;
                         }
