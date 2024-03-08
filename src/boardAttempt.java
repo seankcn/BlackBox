@@ -307,15 +307,29 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         System.out.println(x + " " + y + " " + deltaX + " " + deltaY);
         boolean rayStopped = false; // array has either reached the border or been absorbed
 
-        while(!rayStopped) {
-            if(hasAtom((int) x, (int) y)) {
-                System.out.println("hit");
-                rayStopped = true;
-                // react accordingly
-            } else {
-                x += deltaX;
-                y += deltaY;
+        while(!rayStopped) { // need to check every surrounding hex for atoms
+            for(int i = -1; i < 2; i++) { // row
+                for(int j = -1; j < 1; j++) { // 'column'
+                    // check
+                    if(x + i < 9 && x + i >=0 && y + j < 9 && y + j >= 0) {
+                        //System.out.println("    " + i + " " + j);
+                        if(hasAtom((int) x + i, (int) y + j)) {
+                            System.out.println("Hit at x: " + (x + i) + " y:" + (y + j));
+                            rayStopped = true;
+                            break;
+                        }
+                    }
+                    if(i == 0 && j == 0 && y - 1 < 9 && y - 1 >= 0) {
+                        if(hasAtom((int) x, (int) y - 1)) {
+                            System.out.println("this is meant to be on the second row when we have to check 3 hexagons instead of 2");
+                        }
+                    }
+                }
             }
+            System.out.println("new hex \n");
+
+            x += deltaX;
+            y += deltaY;
             if(x >= 9 || y >= 9) {
                 System.out.println("miss");
                 rayStopped = true;
