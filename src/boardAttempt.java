@@ -4,26 +4,23 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
-import javafx.scene.layout.Background;
-import javafx.scene.layout.StackPane;
-import javafx.scene.paint.Color;
-import javafx.scene.shape.Polygon;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
 import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.StackPane;
 import javafx.scene.paint.Color;
 import javafx.scene.robot.Robot;
+import javafx.scene.shape.Circle;
+import javafx.scene.shape.Polygon;
+import javafx.scene.shape.Polyline;
 import javafx.stage.Stage;
-import javafx.scene.Parent;
-import javafx.scene.Scene;
-import javafx.scene.shape.*;
 
-import java.awt.*;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Random;
@@ -34,6 +31,7 @@ import static java.lang.Math.*;
 public class boardAttempt extends Application implements EventHandler<ActionEvent> {
     StackPane sp = new StackPane(); // stackpane for centering group
     Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
+    Group hexagons = new Group(); // group for hexagons and atoms
     int atomNum = 0;
     char[][] board = new char[9][9];
     double hexRadius = 15; // can change size of everything by altering this variable
@@ -135,8 +133,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         return g;
     }
     public Parent makeBoard() {
-        Group g = new Group(); // group for hexagons and atoms
-
         Random rand = new Random(); // rand for randomly assigning atoms
         Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
         while(myatoms.size() < 4){myatoms.add(rand.nextInt(61));} // add atoms until done
@@ -163,12 +159,12 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 coords.setLayoutY(y);
                 coords.setViewOrder(-1); // label each hexagon for development purposes
 
-                g.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
+                hexagons.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
                 if(i == 0 || i == 8 || j == 0 || j == 4 + k){ //outerHexagons, create labels for outersides
-                    g.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
+                    hexagons.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
                 }
                 if(myatoms.contains(count)){ // if atom should be here
-                    g.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
+                    hexagons.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
                     board[coordx][coordy] = 'a';
                 }else{
                     board[coordx][coordy] = 'e'; // populate model
@@ -176,7 +172,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 count++;
             }
         }
-        return g; // return group
+        return hexagons; // return group
     }
 
     public static void main(String[] args) {
@@ -308,35 +304,24 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
     // TODO
     public double[] shootRay(double x, double y, double deltaX, double deltaY) {
-        Robot robot = new Robot();
-        double xAtomCenter, yAtomCenter;
-        boolean reachedBorder = false;
-        while(!reachedBorder) {
-            if(robot.getPixelColor(x, y) == Color.GOLD) { // Ray has collided with an atom radii
-                // change deltas depending on current delta values
-                for(int j = 0; j < atomNum; j++) { // check which atom the ray collided with
-                    Circle temp = (Circle) radiiOfAtoms.getChildren().get(j);
-                    if(radiiOfAtoms.getChildren().get(j).contains(x, y)) {
-                        System.out.println("Bounce at atom " + j);
-                        xAtomCenter = temp.getCenterX();
-                        yAtomCenter = temp.getCenterY();
-                        if(yAtomCenter - y == 0) { // cases for ray reflection
-                            deltaX *= -1;
-                        } else if(xAtomCenter - x == 0) {
-                            deltaY *= -1;
-                        }
-                    }
-                }
-            } else {
-                 x += deltaX;
-                 y += deltaY;
-            }
+        System.out.println(x + " " + y + " " + deltaX + " " + deltaY);
+        boolean rayStopped = false; // array has either reached the border or been absorbed
 
-            if(robot.getPixelColor(x, y) == Color.DARKSLATEGREY) { // Ray has left the game board
-                reachedBorder = true;
+        while(!rayStopped) {
+            if(hasAtom((int) x, (int) y)) {
+                System.out.println("hit");
+                rayStopped = true;
+                // react accordingly
+            } else {
+                x += deltaX;
+                y += deltaY;
+            }
+            if(x >= 9 || y >= 9) {
                 System.out.println("miss");
+                rayStopped = true;
             }
         }
+
         return new double[]{x, y};
     }
 }
