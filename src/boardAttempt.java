@@ -50,7 +50,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.setScene(scene);
         primaryStage.show();
 
-        getAtomCoordinates();
+        //getAtomCoordinates();
     }
 
     public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
@@ -84,7 +84,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
-        //g.setVisible(false); // hide atoms
+        g.setVisible(false); // hide atoms
         atomNum++;
         return g;
     }
@@ -123,7 +123,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
+                //shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
                 shootRay2(myargs[0], myargs[1], myargs[2], myargs[3]);
             }
         });
@@ -181,10 +181,10 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 if(list[i][j] == 'a'){
                     if(list[i-1][j] == 'e'){ list[i-1][j] = 'f';}
                     if(list[i][j-1] == 'e'){ list[i][j-1] = 'f';}
-                    if(list[i][j-1] == 'e' && list[i-1][j] == 'e'){ list[i-1][j-1] = 'f';}
+                    if(list[i-1][j-1] == 'e'){ list[i-1][j-1] = 'f';}
                     if(list[i+1][j] == 'e'){ list[i+1][j] = 'f';}
                     if(list[i][j+1] == 'e'){ list[i][j+1] = 'f';}
-                    if(list[i][j+1] == 'e' && list[i+1][j] == 'e'){ list[i+1][j+1] = 'f';}
+                    if(list[i+1][j+1] == 'e'){ list[i+1][j+1] = 'f';}
                 }
             }
         }
@@ -246,7 +246,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 }
                 boolean x = hasAtom(i, coordy);
                 if(x){
-                    System.out.println("There is an atom at (" + i + ", " + coordy + ")");
+                    System.out.println("There is an atom at (" + (i-1) + ", " + (coordy-1) + ")");
                 }
             }
         }
@@ -318,7 +318,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     }
 
     // TODO
-    public double[] shootRay(double x, double y, double deltaX, double deltaY) {
+    public double[] shootRay(double x, double y, double deltaX, double deltaY) { // WIP
         System.out.println(x + " " + y + " " + deltaX + " " + deltaY);
         boolean rayStopped = false; // array has either reached the border or been absorbed
 
@@ -371,6 +371,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 System.out.println("bounced"); // bounce off field
                 //shootRay2(new values) // recursive call until absorbed or exit box
             }
+        }
+        if(board[xpos][ypos] == 'a'){
+            System.out.println("DIRECT HIT");
         }
     }
 }
