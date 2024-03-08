@@ -123,6 +123,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
+                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
                 shootRay2(myargs[0], myargs[1], myargs[2], myargs[3]);
             }
         });
