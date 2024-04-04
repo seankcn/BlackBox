@@ -28,6 +28,7 @@ import java.util.Set;
 import static java.lang.Math.*;
 
 public class boardAttempt extends Application implements EventHandler<ActionEvent> {
+    Player player = new Player("Test"); // temp for testing, will actually ask for a name in final build
     StackPane sp = new StackPane(); // stackpane for centering group
     Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
     Group hexagons = new Group(); // group for hexagons and atoms
@@ -41,7 +42,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
         sp.getChildren().addAll(makeBoard()); // add group to stackpane
         //Button button = setStartButton(); // creates the start button
-        //sp.getChildren().add(button);
+        sp.getChildren().add(setGuessButton());
+        sp.getChildren().add(setSubmitGuessButton());
         System.out.println("Click entry points to shoot rays");
 
         Scene scene = new Scene(sp, 600, 600);
@@ -64,6 +66,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 x-edge, y-hexRadius});
         hex.setFill(Color.BLACK);
         hex.setStroke(Color.YELLOW);
+        hex.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
+            if(currentlyGuessing) {
+                guessAtomLocations(hex);
+            }
+        });
         hex.setViewOrder(0);
         return hex;
     }
@@ -123,8 +130,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                //shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
-                shootRay2(myargs[0], myargs[1], myargs[2], myargs[3]);
+                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
             }
         });
 
@@ -317,44 +323,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         return outerHexG;
     }
 
-    // TODO
-    public double[] shootRay(double x, double y, double deltaX, double deltaY) { // WIP
-        System.out.println(x + " " + y + " " + deltaX + " " + deltaY);
-        boolean rayStopped = false; // array has either reached the border or been absorbed
-
-        while(!rayStopped) { // need to check every surrounding hex for atoms
-            for(int i = -1; i < 2; i++) { // row
-                for(int j = -1; j < 1; j++) { // 'column'
-                    if(x + j < 9 && x + j >=0 && y + i < 9 && y + i >= 0) { // doesn't hit from top right
-                        //System.out.println("    " + i + " " + j);
-                        if(hasAtom((int) x + j, (int) y + i)) {
-                            System.out.println("Hit at x: " + (x) + " y: " + (y));
-                            rayStopped = true;
-                            break;
-                        }
-                    }
-
-                    if(i == 0 && j == 0 && y - 1 < 9 && y - 1 >= 0) {
-                        if(hasAtom((int) x, (int) y - 1)) {
-                            System.out.println("Hit at x: " + (x) + "y: " + (y));
-                            rayStopped = true;
-                            break;
-                        }
-                    }
-                }
-            }
-
-            x += deltaX;
-            y += deltaY;
-            if(x >= 9 || y >= 9) {
-                System.out.println("miss");
-                rayStopped = true;
-            }
-        }
-
-        return new double[]{x, y};
-    }
-    public void shootRay2(int x, int y, int i, int j){
+    public void shootRay(int x, int y, int i, int j){
         int xpos = x+1;
         int ypos = y+1;
         while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
@@ -375,5 +344,67 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         if(board[xpos][ypos] == 'a'){
             System.out.println("DIRECT HIT");
         }
+        player.incrementRaysShot();
+    }
+
+    boolean currentlyGuessing = false;
+    private Button setGuessButton() {
+        Button guessButton = new Button();
+        guessButton.setText("Click to toggle guesses!");
+        guessButton.setTranslateY(-250);
+        guessButton.setViewOrder(-2);
+        EventHandler<ActionEvent> event = actionEvent -> {
+            currentlyGuessing = !currentlyGuessing;
+        };
+        guessButton.setOnAction(event);
+        return guessButton;
+    }
+
+    Button submitGuessButton = new Button();
+    private Button setSubmitGuessButton() {
+        submitGuessButton.setText("Submit guesses?");
+        submitGuessButton.setTranslateY(-250);
+        submitGuessButton.setTranslateX(150);
+        submitGuessButton.setViewOrder(-2);
+        submitGuessButton.setVisible(false);
+        EventHandler<ActionEvent> event = actionEvent -> {
+            checkIfGuessesCorrect();
+            System.out.println(player.getPlayerInfo()); // Finish for final project
+        };
+        submitGuessButton.setOnAction(event);
+        return submitGuessButton;
+    }
+
+    Polygon[] guesses = new Polygon[4];
+    int numOfGuesses = 0;
+    public void guessAtomLocations(Polygon guess) { // called by an EventHandler in createHex()
+        if(numOfGuesses < 4) {
+            if(guess.getFill() == Color.BLACK) {
+                guesses[numOfGuesses++] = guess;
+                guess.setFill(Color.RED);
+            } else {
+                guess.setFill(Color.BLACK);
+                numOfGuesses--;
+            }
+        } else {
+            if(guess.getFill() == Color.RED) {
+                numOfGuesses--;
+            }
+            guess.setFill(Color.BLACK);
+        }
+
+        if(numOfGuesses == 4) {
+            submitGuessButton.setVisible(true);
+        }
+    }
+
+    public void checkIfGuessesCorrect() {
+        // To be implemented later
+
+        // After all guesses are made reveal the atom locations
+        // This method will make each atom check the color of the hex its in
+        // - If it's red, correct guess
+        // - Subtract the amount of correct guesses from total guesses for misses
+        // Add the appropriate amount to the score
     }
 }
