@@ -4,6 +4,7 @@ import javafx.event.EventHandler;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
+import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
@@ -20,10 +21,7 @@ import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Polyline;
 import javafx.stage.Stage;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Random;
-import java.util.Set;
+import java.util.*;
 
 import static java.lang.Math.*;
 
@@ -33,6 +31,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
     Group hexagons = new Group(); // group for hexagons and atoms
     int atomNum = 0;
+    List<Node> atoms = new ArrayList<>();
     char[][] board = new char[11][11];
     double hexRadius = 15; // can change size of everything by altering this variable
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
@@ -93,6 +92,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         g.setVisible(false); // hide atoms
         atomNum++;
+        atoms.add(g);
         return g;
     }
     public Parent createIn(double xto, double yto, double xfrom, double yfrom, int num, int row, int col){
@@ -239,6 +239,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     public boolean hasAtom(int i, int j){
         return (board[i][j] == 'a');
     }
+    public void makeAtomsVisible(){
+        for(Node atom : atoms){
+            atom.setVisible(true);
+        }
+    }
     public void getAtomCoordinates(){
         for(int i = 0; i<9; i++){
             double k = 4 - Math.abs(4-i);
@@ -370,6 +375,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         EventHandler<ActionEvent> event = actionEvent -> {
             checkIfGuessesCorrect();
             System.out.println(player.getPlayerInfo()); // Finish for final project
+            makeAtomsVisible();
         };
         submitGuessButton.setOnAction(event);
         return submitGuessButton;
