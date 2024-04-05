@@ -378,8 +378,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         newi = sundial[newdir][0];
         newj = sundial[newdir][1];
-        System.out.println("bounced"); // bounce off field
-        System.out.println((x-1) + "," + (y-1) + " new direction: i:" + newi + " j:" + newj);
+        //System.out.println("bounced"); // bounce off field
+        //System.out.println((x-1) + "," + (y-1) + " new direction: i:" + newi + " j:" + newj);
         shootRay(x+newi, y+newj, newi, newj); // shoot new ray
     }
 
