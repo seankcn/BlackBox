@@ -22,6 +22,7 @@ import javafx.scene.shape.Polyline;
 import javafx.stage.Stage;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
 
@@ -130,7 +131,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                shootRay(myargs[0], myargs[1], myargs[2], myargs[3]);
+                shootRay(myargs[0]+1, myargs[1]+1, myargs[2], myargs[3]);
             }
         });
 
@@ -327,10 +328,64 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         return outerHexG;
     }
+    public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing moves direction clockwise
+    public void deflectRay(int x, int y, int i, int j){
+        int dir;
+        for(dir = 0; dir < sundial.length; dir++){
+            if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
+                break;
+            }
+        }
+        int rotations = 0, newdir, newi, newj;
+
+        int[] anticlockwise, clockwise; // find directions either side in front of you
+        if(dir == 0){
+            clockwise = sundial[dir+1];
+            anticlockwise = sundial[5];
+        }else if(dir == 5){
+            clockwise = sundial[0];
+            anticlockwise = sundial[dir-1];
+        }else{
+            clockwise = sundial[dir+1];
+            anticlockwise = sundial[dir-1];
+        }
+
+        if(board[x+anticlockwise[0]][y+anticlockwise[1]] == 'a'){ // check where atoms are
+            rotations = 1; // 60 degrees clockwise
+        }
+        if(board[x+clockwise[0]][y+clockwise[1]] == 'a'){
+            if(rotations == 1){
+                rotations = 3; // 180 degrees
+            }else{
+                rotations = -1; // 60 degrees anticlockwise
+            }
+        }
+        if(board[x+i][x+j] == 'a') {
+            if(abs(rotations) == 1){
+                rotations *= 2; // 60 -> 120 degrees
+            }else if(rotations == 0) {
+                System.out.println("Direct Hit");
+                return;
+            }
+        }
+        if(rotations == 0){rotations = 3;} // no atom in front means edge of board, 180 degree deflection
+        if(dir+rotations < 0){ // find new direction
+            newdir = 6 + rotations;
+        }else if(dir+rotations > 5){
+            newdir = dir+rotations-6;
+        }else{
+            newdir = dir+rotations;
+        }
+        newi = sundial[newdir][0];
+        newj = sundial[newdir][1];
+        System.out.println("bounced"); // bounce off field
+        System.out.println((x-1) + "," + (y-1) + " new direction: i:" + newi + " j:" + newj);
+        shootRay(x+newi, y+newj, newi, newj); // shoot new ray
+    }
 
     public void shootRay(int x, int y, int i, int j){
-        int xpos = x+1;
-        int ypos = y+1;
+        int xpos = x;
+        int ypos = y;
         while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
             xpos+=i; // move
             ypos+=j;
@@ -339,12 +394,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
         }
         if(board[xpos][ypos] == 'f'){ // hit field
-            if(board[xpos+i][ypos+j] == 'a'){ // if heading towards atom, hit
-                System.out.println("DIRECT HIT");
-            }else{
-                System.out.println("bounced"); // bounce off field
-                //shootRay2(new values) // recursive call until absorbed or exit box
-            }
+            deflectRay(xpos, ypos, i, j); // recursive call until absorbed or exit box
         }
         if(board[xpos][ypos] == 'a'){
             System.out.println("DIRECT HIT");
