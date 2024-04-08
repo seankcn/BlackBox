@@ -360,7 +360,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 rotations = -1; // 60 degrees anticlockwise
             }
         }
-        if(board[x+i][x+j] == 'a') {
+        if(board[x+i][y+j] == 'a') {
             if(abs(rotations) == 1){
                 rotations *= 2; // 60 -> 120 degrees
             }else if(rotations == 0) {
@@ -378,8 +378,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         newi = sundial[newdir][0];
         newj = sundial[newdir][1];
-        //System.out.println("bounced"); // bounce off field
-        //System.out.println((x-1) + "," + (y-1) + " new direction: i:" + newi + " j:" + newj);
         shootRay(x+newi, y+newj, newi, newj); // shoot new ray
     }
 
