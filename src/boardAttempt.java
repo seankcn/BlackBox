@@ -30,12 +30,16 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     Player player = new Player("Test"); // temp for testing, will actually ask for a name in final build
     StackPane sp = new StackPane(); // stackpane for centering group
     Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
-    Group hexagons = new Group(); // group for hexagons and atoms
+    Group hexagons = new Group(); // group for hexagons, atoms & rays
     int atomNum = 0;
     List<Node> atoms = new ArrayList<>();
+    List<Polyline> rays = new ArrayList<>();
+    List<Integer> rayPoints;
     char[][] board = new char[11][11];
     double hexRadius = 15; // can change size of everything by altering this variable
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
+    public double[][] compass = {{edge, 3*hexRadius},{-edge, 3*hexRadius},{-2*edge, 0},{-edge, -3*hexRadius},{edge, -3*hexRadius},{2*edge, 0}}; // incrementing moves direction clockwise
+    public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing moves direction clockwise
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -53,6 +57,15 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.show();
 
         //getAtomCoordinates();
+    }
+    public int getDirection(int i, int j){
+        int dir;
+        for(dir = 0; dir < sundial.length; dir++){
+            if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
+                return dir;
+            }
+        }
+        return -1;
     }
 
     public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
@@ -125,13 +138,16 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         label.setOnMouseClicked(new EventHandler<MouseEvent>() {
             @Override
             public void handle(MouseEvent mouseEvent) {
-                //System.out.println(label.getId());
                 String[] nums = label.getId().split(",");
                 int[] myargs = new int[4];
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
+                rayPoints = new ArrayList<>();
+                int dir = getDirection(myargs[2], myargs[3]);
+                rayPoints.add(dir);
                 shootRay(myargs[0]+1, myargs[1]+1, myargs[2], myargs[3]);
+                createRayGUI(xto-compass[dir][0], yto-compass[dir][1], rayPoints);
             }
         });
 
@@ -328,14 +344,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         return outerHexG;
     }
-    public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing moves direction clockwise
     public void deflectRay(int x, int y, int i, int j){
-        int dir;
-        for(dir = 0; dir < sundial.length; dir++){
-            if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
-                break;
-            }
-        }
+        int dir = getDirection(i, j);
         int rotations = 0, newdir, newi, newj;
 
         int[] anticlockwise, clockwise; // find directions either side in front of you
@@ -364,6 +374,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             if(abs(rotations) == 1){
                 rotations *= 2; // 60 -> 120 degrees
             }else if(rotations == 0) {
+                rayPoints.add(dir);
                 System.out.println("Direct Hit");
                 return;
             }
@@ -378,15 +389,19 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         newi = sundial[newdir][0];
         newj = sundial[newdir][1];
+        rayPoints.add(newdir);
         shootRay(x+newi, y+newj, newi, newj); // shoot new ray
     }
 
     public void shootRay(int x, int y, int i, int j){
         int xpos = x;
         int ypos = y;
+        int dir = getDirection(i, j);
+
         while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
             xpos+=i; // move
             ypos+=j;
+            rayPoints.add(dir);
         }
         if(board[xpos][ypos] == 'n'){ // if at null space, then exited
             System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
@@ -424,6 +439,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             checkIfGuessesCorrect();
             System.out.println(player.getPlayerInfo()); // Finish for final project
             makeAtomsVisible();
+            showRays();
         };
         submitGuessButton.setOnAction(event);
         return submitGuessButton;
@@ -460,5 +476,29 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         // - If it's red, correct guess
         // - Subtract the amount of correct guesses from total guesses for misses
         // Add the appropriate amount to the score
+    }
+    public void createRayGUI(double x, double y, List<Integer> movements){
+        double[] points = new double[(movements.size()+1)*2];
+        points[0] = x;
+        points[1] = y;
+        int pointslen = 2;
+        for(Integer i : movements){
+            x = x + compass[i][0];
+            y = y + compass[i][1];
+            points[pointslen++] = x;
+            points[pointslen++] = y;
+        }
+        Polyline v1 = new Polyline(points);
+        v1.setViewOrder(-2);
+        v1.setStrokeWidth(3);
+        v1.setStroke(Color.GREEN);
+        v1.setVisible(false);
+        hexagons.getChildren().addAll(v1);
+        rays.add(v1);
+    }
+    public void showRays(){
+        for(Polyline p : rays){
+            p.setVisible(true);
+        }
     }
 }
