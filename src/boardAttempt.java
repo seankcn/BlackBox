@@ -58,7 +58,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
         //getAtomCoordinates();
     }
-    public int getDirection(int i, int j){
+    public int getDirection(int i, int j){ // translates [i,j] board direction from model into compass index
         int dir;
         for(dir = 0; dir < sundial.length; dir++){
             if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
@@ -143,11 +143,11 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                rayPoints = new ArrayList<>();
-                int dir = getDirection(myargs[2], myargs[3]);
-                rayPoints.add(dir);
-                shootRay(myargs[0]+1, myargs[1]+1, myargs[2], myargs[3]);
-                createRayGUI(xto-compass[dir][0], yto-compass[dir][1], rayPoints);
+                rayPoints = new ArrayList<>(); // new list for ray movements
+                int dir = getDirection(myargs[2], myargs[3]); // get direction ray is being sent
+                rayPoints.add(dir); // add to list (so ray appears outside of box initially)
+                shootRay(myargs[0]+1, myargs[1]+1, myargs[2], myargs[3]); // shoot ray
+                createRayGUI(xto-compass[dir][0], yto-compass[dir][1], rayPoints); // display ray
             }
         });
 
@@ -477,14 +477,14 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         // - Subtract the amount of correct guesses from total guesses for misses
         // Add the appropriate amount to the score
     }
-    public void createRayGUI(double x, double y, List<Integer> movements){
+    public void createRayGUI(double x, double y, List<Integer> movements){ // function to create ray visually using list of movements
         double[] points = new double[(movements.size()+1)*2];
         points[0] = x;
         points[1] = y;
         int pointslen = 2;
-        for(Integer i : movements){
+        for(Integer i : movements){ // for each movement
             x = x + compass[i][0];
-            y = y + compass[i][1];
+            y = y + compass[i][1]; // move x and y to new position
             points[pointslen++] = x;
             points[pointslen++] = y;
         }
@@ -498,7 +498,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     }
     public void showRays(){
         for(Polyline p : rays){
-            p.setVisible(true);
+            p.setVisible(true); // make each ray visible
         }
     }
 }
