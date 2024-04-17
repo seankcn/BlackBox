@@ -1,3 +1,5 @@
+package blackboxplus;
+
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
@@ -22,29 +24,33 @@ import javafx.scene.shape.Polyline;
 import javafx.stage.Stage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
+import static java.lang.Math.signum;
 
-public class boardAttempt extends Application implements EventHandler<ActionEvent> {
-    Player player = new Player("Test"); // temp for testing, will actually ask for a name in final build
-    StackPane sp = new StackPane(); // stackpane for centering group
-    //Group radiiOfAtoms = new Group(); // group containing the atom radii for collision checks
+public class View extends Application implements EventHandler<ActionEvent> {
     Group hexagons = new Group(); // group for hexagons, atoms & rays
-    //int atomNum = 0;
+    StackPane sp = new StackPane(); // stackpane for centering group
     List<Node> atoms = new ArrayList<>();
     List<Polyline> rays = new ArrayList<>();
-    List<Integer> rayPoints;
-    char[][] board = new char[11][11];
+    Set<Integer> atomLocs;
     double hexRadius = 15; // can change size of everything by altering this variable
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
     public double[][] compass = {{edge, 3*hexRadius},{-edge, 3*hexRadius},{-2*edge, 0},{-edge, -3*hexRadius},{edge, -3*hexRadius},{2*edge, 0}}; // incrementing moves direction clockwise
-    public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing moves direction clockwise
+    Polygon[] guesses = new Polygon[4];
+    int numOfGuesses = 0;
+    Button submitGuessButton = new Button();
+    int myin1 = 1;
+    int myin2 = 54;
+    boolean currentlyGuessing = false;
+    Player player;
+    Model myModel;
+    static int NUMOFATOMS = 4;
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
-        sp.getChildren().addAll(makeBoard()); // add group to stackpane
+        sp.getChildren().addAll(makeBoard(atomLocs)); // add group to stackpane
         //Button button = setStartButton(); // creates the start button
         sp.getChildren().add(setGuessButton());
         sp.getChildren().add(setSubmitGuessButton());
@@ -55,19 +61,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        //getAtomCoordinates();
     }
-    public int getDirection(int i, int j){ // translates [i,j] board direction from model into compass index
-        int dir;
-        for(dir = 0; dir < sundial.length; dir++){
-            if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
-                return dir;
-            }
-        }
-        return -1;
-    }
-
     public Polygon createHex(double x, double y){ // create a hexagon with center (x, y)
         Polygon hex = new Polygon();
         hex.getPoints().addAll(new Double[]{ // set dimensions
@@ -143,24 +137,15 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                rayPoints = new ArrayList<>(); // new list for ray movements
-                int dir = getDirection(myargs[2], myargs[3]); // get direction ray is being sent
-                rayPoints.add(dir); // add to list (so ray appears outside of box initially)
-                shootRay(myargs[0]+1, myargs[1]+1, myargs[2], myargs[3]); // shoot ray
-                createRayGUI(xto-compass[dir][0], yto-compass[dir][1], rayPoints); // display ray
+                myModel.startRay(xto, yto, myargs[0], myargs[1], myargs[2], myargs[3]); // shoot ray
+                player.incrementRaysShot();
             }
         });
-
         g.getChildren().addAll(pl, label);
         g.setViewOrder(1);
         return g;
     }
-    public Parent makeBoard() {
-        Random rand = new Random(); // rand for randomly assigning atoms
-        Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
-        while(myatoms.size() < 4){myatoms.add(rand.nextInt(61));} // add atoms until done
-        for(int i = 0; i < board.length; i++) {Arrays.fill(board[i], 'n');} // fill board model
-
+    public Parent makeBoard(Set<Integer> myatoms) {
         Integer count = 0;
         double x, y;
         int coordx, coordy;
@@ -188,35 +173,12 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 }
                 if(myatoms.contains(count)){ // if atom should be here
                     hexagons.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
-                    board[coordx+1][coordy+1] = 'a';
-                }else{
-                    board[coordx+1][coordy+1] = 'e'; // populate model with empty hexagons
                 }
                 count++;
             }
         }
-        makeFields(board);
         return hexagons; // return group
     }
-    public void makeFields(final char[][] list){ // add fields to board model
-        for(int i = 1; i < list.length-1; i++){
-            for(int j = 1; j < list.length-1; j++){
-                if(list[i][j] == 'a'){
-                    if(list[i-1][j] == 'e'){ list[i-1][j] = 'f';}
-                    if(list[i][j-1] == 'e'){ list[i][j-1] = 'f';}
-                    if(list[i-1][j-1] == 'e'){ list[i-1][j-1] = 'f';}
-                    if(list[i+1][j] == 'e'){ list[i+1][j] = 'f';}
-                    if(list[i][j+1] == 'e'){ list[i][j+1] = 'f';}
-                    if(list[i+1][j+1] == 'e'){ list[i+1][j+1] = 'f';}
-                }
-            }
-        }
-    }
-
-    public static void main(String[] args) {
-        launch(args);
-    }
-
     private Button setStartButton() { // creates the start button
         Button startButton = new Button();
         startButton.setText("Click to start!");
@@ -230,7 +192,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         startButton.setOnAction(event);
         return startButton;
     }
-
     private void rayInput() {
         StackPane sPane = new StackPane(); // stackpane for changing alignment
         TextField input = new TextField("");
@@ -247,41 +208,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         sPane.setAlignment(Pos.BOTTOM_CENTER);
         sp.getChildren().add(sPane);
     }
-
     @Override
-    public void handle(ActionEvent actionEvent) { // have to implement this method because of EventHandler
-
-    }
-
-    public void makeAtomsVisible(){
-        for(Node atom : atoms){
-            atom.setVisible(true);
-        }
-    }
-    /*public boolean hasAtom(int i, int j){
-        return (board[i][j] == 'a');
-    }
-    public void getAtomCoordinates(){
-        for(int i = 0; i<9; i++){
-            double k = 4 - Math.abs(4-i);
-            for (double j = 0; j < 5+k; j++) {
-                int coordy;
-
-                if(i < 5) {
-                    coordy = (int) j;
-                }else{
-                    coordy = (int) (j-k+4);
-                }
-                boolean x = hasAtom(i, coordy);
-                if(x){
-                    System.out.println("There is an atom at (" + (i-1) + ", " + (coordy-1) + ")");
-                }
-            }
-        }
-    }*/
-
-    int myin1 = 1;
-    int myin2 = 54;
+    public void handle(ActionEvent actionEvent) {} // have to implement this method because of EventHandler
     //function to set labels on outsides of the board
     public Group setLabels(double x, double y, int row, int col){
         Group outerHexG = new Group();
@@ -289,133 +217,61 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
 
         if(row != 8 && col == 0){ //upperleft 1,0 - 4,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y-e2, myin1++, row, col),
-                createIn(x, y, x-e1-e1, y, myin1++, row, col)); //a
+                    createIn(x, y, x-e1, y-e2, myin1++, row, col),
+                    createIn(x, y, x-e1-e1, y, myin1++, row, col)); //a
         }if(row == 4 && col == 0){ //4,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y+e2, myin1++, row, col));
+                    createIn(x, y, x-e1, y+e2, myin1++, row, col));
         }
         for(int i = 5; i < 9; i++){ //bottomleft 4,0 - 8,4
             for(int j = 0; j < 5; j++){
                 if(row == i && col == j){
                     outerHexG.getChildren().addAll(
-                        createIn(x, y, x-e1-e1, y, myin1++, row, col),
-                        createIn(x, y, x-e1, y+e2, myin1++, row, col));
+                            createIn(x, y, x-e1-e1, y, myin1++, row, col),
+                            createIn(x, y, x-e1, y+e2, myin1++, row, col));
                 }
             }
         }if(row == 8 && col == 4){ //8,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1/2, y+e2, myin1++, row, col));
+                    createIn(x, y, x+e1/2, y+e2, myin1++, row, col));
         }
         if(row == 8 && col != 4){ //bottom 8,5 - 8,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y+e1+e1, myin1++, row, col),
-                createIn(x, y, x+e1/2, y+e1+e1, myin1++, row, col));
+                    createIn(x, y, x-e1, y+e1+e1, myin1++, row, col),
+                    createIn(x, y, x+e1/2, y+e1+e1, myin1++, row, col));
         }if(col == 8 && row == 8){ //8,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin1++, row, col));
+                    createIn(x, y, x+e2, y, myin1++, row, col));
         }if(row == 0 && col == 0){ //0,0
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1/2, y-e2, myin2--, row, col));
+                    createIn(x, y, x+e1/2, y-e2, myin2--, row, col));
         }
         if(row == 0 && col != 0){ //upper 0,0 - 0,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x-e1, y-e1-e1, myin2--, row, col),
-                createIn(x, y, x+e1/2, y-e1-e1, myin2--, row, col));
+                    createIn(x, y, x-e1, y-e1-e1, myin2--, row, col),
+                    createIn(x, y, x+e1/2, y-e1-e1, myin2--, row, col));
         }if(row == 0 && col == 4){ //0,4
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin2--, row, col)); //a
+                    createIn(x, y, x+e2, y, myin2--, row, col)); //a
         }
         for(int i = 1; i < 5; i++){ //upperright 1,5 - 4,8
             for(int j = 5; j < 9; j++){
                 if(row == i && col == j){
                     outerHexG.getChildren().addAll(
-                        createIn(x, y, x+e1, y-e2, myin2--, row, col),
-                        createIn(x, y, x+e2, y, myin2--, row, col));
+                            createIn(x, y, x+e1, y-e2, myin2--, row, col),
+                            createIn(x, y, x+e2, y, myin2--, row, col));
                 }
             }
         }if(row == 4 && col == 8){ //4,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e1, y+e2, myin2--, row, col));
+                    createIn(x, y, x+e1, y+e2, myin2--, row, col));
         }if(row != 8 && row != 4 && col == 8){ //bottomright 4,8 - 7,8
             outerHexG.getChildren().addAll(
-                createIn(x, y, x+e2, y, myin2--, row, col),
-                createIn(x, y, x+e1, y+e2, myin2--, row, col));
+                    createIn(x, y, x+e2, y, myin2--, row, col),
+                    createIn(x, y, x+e1, y+e2, myin2--, row, col));
         }
         return outerHexG;
     }
-    public void deflectRay(int x, int y, int i, int j){
-        int dir = getDirection(i, j);
-        int rotations = 0, newdir, newi, newj;
-
-        int[] anticlockwise, clockwise; // find directions either side in front of you
-        if(dir == 0){
-            clockwise = sundial[dir+1];
-            anticlockwise = sundial[5];
-        }else if(dir == 5){
-            clockwise = sundial[0];
-            anticlockwise = sundial[dir-1];
-        }else{
-            clockwise = sundial[dir+1];
-            anticlockwise = sundial[dir-1];
-        }
-
-        if(board[x+anticlockwise[0]][y+anticlockwise[1]] == 'a'){ // check where atoms are
-            rotations = 1; // 60 degrees clockwise
-        }
-        if(board[x+clockwise[0]][y+clockwise[1]] == 'a'){
-            if(rotations == 1){
-                rotations = 3; // 180 degrees
-            }else{
-                rotations = -1; // 60 degrees anticlockwise
-            }
-        }
-        if(board[x+i][y+j] == 'a') {
-            if(abs(rotations) == 1){
-                rotations *= 2; // 60 -> 120 degrees
-            }else if(rotations == 0) {
-                rayPoints.add(dir);
-                System.out.println("Direct Hit");
-                return;
-            }
-        }
-        if(rotations == 0){rotations = 3;} // no atom in front means edge of board, 180 degree deflection
-        if(dir+rotations < 0){ // find new direction
-            newdir = 6 + rotations;
-        }else if(dir+rotations > 5){
-            newdir = dir+rotations-6;
-        }else{
-            newdir = dir+rotations;
-        }
-        newi = sundial[newdir][0];
-        newj = sundial[newdir][1];
-        rayPoints.add(newdir);
-        shootRay(x+newi, y+newj, newi, newj); // shoot new ray
-    }
-
-    public void shootRay(int x, int y, int i, int j){
-        int xpos = x;
-        int ypos = y;
-        int dir = getDirection(i, j);
-
-        while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
-            xpos+=i; // move
-            ypos+=j;
-            rayPoints.add(dir);
-        }
-        if(board[xpos][ypos] == 'n'){ // if at null space, then exited
-            System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
-        }
-        if(board[xpos][ypos] == 'f'){ // hit field
-            deflectRay(xpos, ypos, i, j); // recursive call until absorbed or exit box
-        }
-        if(board[xpos][ypos] == 'a'){
-            System.out.println("DIRECT HIT");
-        }
-        player.incrementRaysShot();
-    }
-
-    boolean currentlyGuessing = false;
     private Button setGuessButton() {
         Button guessButton = new Button();
         guessButton.setText("Click to toggle guesses!");
@@ -427,8 +283,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         guessButton.setOnAction(event);
         return guessButton;
     }
-
-    Button submitGuessButton = new Button();
     private Button setSubmitGuessButton() {
         submitGuessButton.setText("Submit guesses?");
         submitGuessButton.setTranslateY(-250);
@@ -444,9 +298,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         submitGuessButton.setOnAction(event);
         return submitGuessButton;
     }
-
-    Polygon[] guesses = new Polygon[4];
-    int numOfGuesses = 0;
     public void guessAtomLocations(Polygon guess) { // called by an EventHandler in createHex()
         if(numOfGuesses < 4) {
             if(guess.getFill() == Color.BLACK) {
@@ -467,7 +318,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             submitGuessButton.setVisible(true);
         }
     }
-
     public void checkIfGuessesCorrect() {
         // To be implemented later
 
@@ -500,5 +350,19 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         for(Polyline p : rays){
             p.setVisible(true); // make each ray visible
         }
+    }
+    public void makeAtomsVisible(){
+        for(Node atom : atoms){
+            atom.setVisible(true);
+        }
+    }
+    public View(){
+        Random rand = new Random(); // rand for randomly assigning atoms
+        Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
+        while(myatoms.size() < NUMOFATOMS){myatoms.add(rand.nextInt(61));} // add atoms until done
+
+        this.player = new Player("test");
+        this.atomLocs = myatoms;
+        this.myModel = new Model(atomLocs, this);
     }
 }
