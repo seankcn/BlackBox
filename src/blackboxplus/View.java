@@ -29,12 +29,13 @@ import static java.lang.Math.*;
 import static java.lang.Math.signum;
 
 public class View extends Application implements EventHandler<ActionEvent> {
-    Group hexagons = new Group(); // group for hexagons, atoms & rays
-    StackPane sp = new StackPane(); // stackpane for centering group
-    List<Node> atoms = new ArrayList<>();
-    List<Polyline> rays = new ArrayList<>();
-    Set<Integer> atomLocs;
-    double hexRadius = 15; // can change size of everything by altering this variable
+    Group boardGUI = new Group(); // group for hexagons, atoms & rays
+    StackPane baseStackPane = new StackPane(); // stackpane for centering group & buttons
+    List<Node> atoms = new ArrayList<>(); // list for altering all atoms (making visible)
+    List<Polyline> rays = new ArrayList<>(); // list for altering all rays (making visible)
+    Set<Integer> atomLocs; // list of atom positions
+    double hexRadius = 15; // contant determining size of everything
+    int NUMOFATOMS = 4; // constant determining number of guesses
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
     public double[][] compass = {{edge, 3*hexRadius},{-edge, 3*hexRadius},{-2*edge, 0},{-edge, -3*hexRadius},{edge, -3*hexRadius},{2*edge, 0}}; // incrementing moves direction clockwise
     Polygon[] guesses = new Polygon[4];
@@ -44,20 +45,19 @@ public class View extends Application implements EventHandler<ActionEvent> {
     int myin2 = 54;
     boolean currentlyGuessing = false;
     Player player;
-    Model myModel;
-    static int NUMOFATOMS = 4;
+    Model myModel; // model for board
 
     @Override
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
-        sp.getChildren().addAll(makeBoard(atomLocs)); // add group to stackpane
+        baseStackPane.getChildren().addAll(makeBoard()); // add group to stackpane
         //Button button = setStartButton(); // creates the start button
-        sp.getChildren().add(setGuessButton());
-        sp.getChildren().add(setSubmitGuessButton());
+        baseStackPane.getChildren().add(setGuessButton());
+        baseStackPane.getChildren().add(setSubmitGuessButton());
         System.out.println("Click entry points to shoot rays");
 
-        Scene scene = new Scene(sp, 600, 600);
-        sp.setBackground(spBackground); // Background needed to change the background color because sp blocks the scene
+        Scene scene = new Scene(baseStackPane, 600, 600);
+        baseStackPane.setBackground(spBackground); // Background needed to change the background color because sp blocks the scene
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
@@ -145,7 +145,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         g.setViewOrder(1);
         return g;
     }
-    public Parent makeBoard(Set<Integer> myatoms) {
+    public Parent makeBoard() {
         Integer count = 0;
         double x, y;
         int coordx, coordy;
@@ -167,17 +167,17 @@ public class View extends Application implements EventHandler<ActionEvent> {
                 coords.setLayoutY(y);
                 coords.setViewOrder(-1); // label each hexagon for development purposes
 
-                hexagons.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
+                boardGUI.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
                 if(i == 0 || i == 8 || j == 0 || j == 4 + k){ //outerHexagons, create labels for outersides
-                    hexagons.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
+                    boardGUI.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
                 }
-                if(myatoms.contains(count)){ // if atom should be here
-                    hexagons.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
+                if(atomLocs.contains(count)){ // if atom should be here
+                    boardGUI.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
                 }
                 count++;
             }
         }
-        return hexagons; // return group
+        return boardGUI; // return group
     }
     private Button setStartButton() { // creates the start button
         Button startButton = new Button();
@@ -206,7 +206,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         input.setOnAction(event);
         sPane.getChildren().add(input);
         sPane.setAlignment(Pos.BOTTOM_CENTER);
-        sp.getChildren().add(sPane);
+        baseStackPane.getChildren().add(sPane);
     }
     @Override
     public void handle(ActionEvent actionEvent) {} // have to implement this method because of EventHandler
@@ -299,7 +299,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         return submitGuessButton;
     }
     public void guessAtomLocations(Polygon guess) { // called by an EventHandler in createHex()
-        if(numOfGuesses < 4) {
+        if(numOfGuesses < NUMOFATOMS) {
             if(guess.getFill() == Color.BLACK) {
                 guesses[numOfGuesses++] = guess;
                 guess.setFill(Color.RED);
@@ -314,7 +314,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
             guess.setFill(Color.BLACK);
         }
 
-        if(numOfGuesses == 4) {
+        if(numOfGuesses == NUMOFATOMS) {
             submitGuessButton.setVisible(true);
         }
     }
@@ -343,7 +343,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         v1.setStrokeWidth(3);
         v1.setStroke(Color.GREEN);
         v1.setVisible(false);
-        hexagons.getChildren().addAll(v1);
+        boardGUI.getChildren().addAll(v1);
         rays.add(v1);
     }
     public void showRays(){
