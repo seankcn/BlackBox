@@ -339,17 +339,14 @@ public class View extends Application implements EventHandler<ActionEvent> {
             points[pointslen++] = y;
         }
         Polyline v1 = new Polyline(points);
-        v1.setViewOrder(-2);
+        v1.setViewOrder(2); // make rays appear behind board
         v1.setStrokeWidth(3);
         v1.setStroke(Color.GREEN);
-        v1.setVisible(false);
         boardGUI.getChildren().addAll(v1);
         rays.add(v1);
     }
     public void showRays(){
-        for(Polyline p : rays){
-            p.setVisible(true); // make each ray visible
-        }
+        for(Polyline p : rays){ p.setViewOrder(-2); } // make each ray fully visible
     }
     public void makeAtomsVisible(){
         for(Node atom : atoms){
