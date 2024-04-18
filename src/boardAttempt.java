@@ -104,13 +104,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         //radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
-<<<<<<< HEAD
-        g.setVisible(true); // hide atoms
-        atomNum++;
-=======
         g.setVisible(false); // hide atoms
         //atomNum++;
->>>>>>> 6cf62cf30a9f09878f1a89955d2768dd97f3352b
         atoms.add(g);
         return g;
     }

@@ -319,13 +319,18 @@ public class View extends Application implements EventHandler<ActionEvent> {
         }
     }
     public void checkIfGuessesCorrect() {
-        // To be implemented later
-
-        // After all guesses are made reveal the atom locations
-        // This method will make each atom check the color of the hex its in
-        // - If it's red, correct guess
-        // - Subtract the amount of correct guesses from total guesses for misses
-        // Add the appropriate amount to the score
+        Integer count = 0;
+        for (Node node : boardGUI.getChildren()) {
+            if(node instanceof Polygon){
+                Polygon hex = (Polygon) node;
+                if (hex.getFill() == Color.RED){
+                    if(!atomLocs.contains(count)){
+                        player.incrementAtomsMissed();
+                    }
+                }
+                count++;
+            }
+        }
     }
     public void createRayGUI(double x, double y, List<Integer> movements){ // function to create ray visually using list of movements
         double[] points = new double[(movements.size()+1)*2];

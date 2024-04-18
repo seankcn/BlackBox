@@ -2,6 +2,7 @@ package blackboxplus;
 public class Player {
     private final String playerName;
     private int raysShot = 0;
+    private int atomMissed = 0;
     private int score = 0;
 
     public Player(String name) {
@@ -19,6 +20,9 @@ public class Player {
     public void incrementRaysShot() {
         raysShot++;
         incrementScore(1);
+    }public void incrementAtomsMissed() {
+        atomMissed++;
+        incrementScore(5);
     }
 
     public String getPlayerName() {
@@ -26,6 +30,6 @@ public class Player {
     }
 
     public String getPlayerInfo() { // just for tests for now
-        return getPlayerName() + " had a score of " + score + " points with " + raysShot + " rays shot in total!";
+        return getPlayerName() + " had a score of " + score + " points with " + raysShot + " rays shot in total and " + atomMissed + " atoms misplaced!";
     }
 }
