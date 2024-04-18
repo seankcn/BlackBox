@@ -104,7 +104,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
-        g.setVisible(false); // hide atoms
+        g.setVisible(true); // hide atoms
         atomNum++;
         atoms.add(g);
         return g;
@@ -376,6 +376,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             }else if(rotations == 0) {
                 rayPoints.add(dir);
                 System.out.println("Direct Hit");
+                player.incrementRaysShot();
                 return;
             }
         }
@@ -398,6 +399,7 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         int ypos = y;
         int dir = getDirection(i, j);
 
+
         while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
             xpos+=i; // move
             ypos+=j;
@@ -405,14 +407,15 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         }
         if(board[xpos][ypos] == 'n'){ // if at null space, then exited
             System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
+            player.incrementRaysShot();
         }
         if(board[xpos][ypos] == 'f'){ // hit field
             deflectRay(xpos, ypos, i, j); // recursive call until absorbed or exit box
         }
         if(board[xpos][ypos] == 'a'){
             System.out.println("DIRECT HIT");
+            player.incrementRaysShot();
         }
-        player.incrementRaysShot();
     }
 
     boolean currentlyGuessing = false;
@@ -422,6 +425,9 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         guessButton.setTranslateY(-250);
         guessButton.setViewOrder(-2);
         EventHandler<ActionEvent> event = actionEvent -> {
+            for(Node atom : atoms){
+                atom.setVisible(false);
+            }
             currentlyGuessing = !currentlyGuessing;
         };
         guessButton.setOnAction(event);
