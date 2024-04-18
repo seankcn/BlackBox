@@ -1,6 +1,7 @@
 import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Bounds;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Group;
@@ -22,7 +23,6 @@ import javafx.scene.shape.Polyline;
 import javafx.stage.Stage;
 
 import java.util.*;
-import java.util.stream.Collectors;
 
 import static java.lang.Math.*;
 
@@ -40,6 +40,8 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
     public double[][] compass = {{edge, 3*hexRadius},{-edge, 3*hexRadius},{-2*edge, 0},{-edge, -3*hexRadius},{edge, -3*hexRadius},{2*edge, 0}}; // incrementing moves direction clockwise
     public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing moves direction clockwise
+    Polygon[] hexContainingAtoms = new Polygon[4]; // for comparing to guesses at end of game
+    int hexContainingAtomsCount = 0; // counting variable to help assigning hexs to the array
 
     @Override
     public void start(Stage primaryStage) throws Exception {
@@ -55,8 +57,6 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         primaryStage.setTitle("BlackBox+");
         primaryStage.setScene(scene);
         primaryStage.show();
-
-        //getAtomCoordinates();
     }
     public int getDirection(int i, int j){ // translates [i,j] board direction from model into compass index
         int dir;
@@ -182,13 +182,15 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
                 coords.setLayoutY(y);
                 coords.setViewOrder(-1); // label each hexagon for development purposes
 
-                hexagons.getChildren().addAll(createHex(x, y), coords); // create hexagon and add to group
+                Polygon hexToAdd = createHex(x, y);
+                hexagons.getChildren().addAll(hexToAdd, coords); // create hexagon and add to group
                 if(i == 0 || i == 8 || j == 0 || j == 4 + k){ //outerHexagons, create labels for outersides
                     hexagons.getChildren().addAll(setLabels(x, y, coordx, coordy).getChildren());
                 }
                 if(myatoms.contains(count)){ // if atom should be here
                     hexagons.getChildren().addAll(createAtom(x, y)); // add atom to group in current position
                     board[coordx+1][coordy+1] = 'a';
+                    hexContainingAtoms[hexContainingAtomsCount++] = hexToAdd;
                 }else{
                     board[coordx+1][coordy+1] = 'e'; // populate model with empty hexagons
                 }
@@ -442,10 +444,10 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         submitGuessButton.setViewOrder(-2);
         submitGuessButton.setVisible(false);
         EventHandler<ActionEvent> event = actionEvent -> {
-            checkIfGuessesCorrect();
-            System.out.println(player.getPlayerInfo()); // Finish for final project
             makeAtomsVisible();
             showRays();
+            checkGuesses();
+            System.out.println(player.getPlayerInfo());
         };
         submitGuessButton.setOnAction(event);
         return submitGuessButton;
@@ -457,13 +459,13 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
         if(numOfGuesses < 4) {
             if(guess.getFill() == Color.BLACK) {
                 guesses[numOfGuesses++] = guess;
-                guess.setFill(Color.RED);
+                guess.setFill(Color.YELLOWGREEN);
             } else {
                 guess.setFill(Color.BLACK);
                 numOfGuesses--;
             }
         } else {
-            if(guess.getFill() == Color.RED) {
+            if(guess.getFill() == Color.YELLOWGREEN) {
                 numOfGuesses--;
             }
             guess.setFill(Color.BLACK);
@@ -473,16 +475,35 @@ public class boardAttempt extends Application implements EventHandler<ActionEven
             submitGuessButton.setVisible(true);
         }
     }
-
-    public void checkIfGuessesCorrect() {
-        // To be implemented later
-
-        // After all guesses are made reveal the atom locations
-        // This method will make each atom check the color of the hex its in
-        // - If it's red, correct guess
-        // - Subtract the amount of correct guesses from total guesses for misses
-        // Add the appropriate amount to the score
+    public void checkGuesses() {
+        /*
+        Uses Bounds to get the actual coordinates of the hexagons that were added to the StackPane.
+        The getLayout methods cause null exceptions so have to use these instead.
+         */
+        Bounds guessBounds, atomBounds;
+        double guessX, guessY, atomX, atomY;
+        boolean correctGuess = false;
+        for(int i = 0; i < 4; i++) {
+            guessBounds = guesses[i].localToScene(guesses[i].getBoundsInLocal());
+            guessX = guessBounds.getCenterX();
+            guessY = guessBounds.getCenterY();
+            for(int j  = 0; j < 4; j++) {
+                atomBounds = hexContainingAtoms[j].localToScene(hexContainingAtoms[j].getBoundsInLocal());
+                atomX = atomBounds.getCenterX();
+                atomY = atomBounds.getCenterY();
+                if(guessX == atomX && guessY == atomY) {
+                    System.out.println("Correct guess");
+                    correctGuess = true;
+                }
+            }
+            if(correctGuess) {
+                correctGuess = false;
+            } else {
+                player.incrementAtomsMissed();
+            }
+        }
     }
+
     public void createRayGUI(double x, double y, List<Integer> movements){ // function to create ray visually using list of movements
         double[] points = new double[(movements.size()+1)*2];
         points[0] = x;

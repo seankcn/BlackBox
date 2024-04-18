@@ -19,7 +19,9 @@ public class Player {
     public void incrementRaysShot() {
         raysShot++;
         incrementScore(1);
-    }public void incrementAtomsMissed() {
+    }
+
+    public void incrementAtomsMissed() {
         atomMissed++;
         incrementScore(5);
     }
@@ -28,7 +30,8 @@ public class Player {
         return playerName;
     }
 
-    public String getPlayerInfo() { // just for tests for now
+    public String getPlayerInfo() {
+        // Outputs the results of the game
         return getPlayerName() + " had a score of " + score + " points with " + raysShot + " rays shot in total and " + atomMissed + " atoms misplaced!";
     }
 }
