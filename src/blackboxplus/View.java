@@ -51,7 +51,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
         baseStackPane.getChildren().addAll(makeBoard()); // add group to stackpane
-        //Button button = setStartButton(); // creates the start button
+        //baseStackPane.getChildren().add(setStartButton()); // creates the start button
         baseStackPane.getChildren().add(setGuessButton());
         baseStackPane.getChildren().add(setSubmitGuessButton());
         System.out.println("Click entry points to shoot rays");
@@ -182,10 +182,9 @@ public class View extends Application implements EventHandler<ActionEvent> {
     private Button setStartButton() { // creates the start button
         Button startButton = new Button();
         startButton.setText("Click to start!");
-        startButton.setTranslateY(-200);
+        startButton.setTranslateY(-100);
         startButton.setViewOrder(-2);
         EventHandler<ActionEvent> event = actionEvent -> {
-            Main.startOfGame();
             startButton.setVisible(false);
             rayInput();
         };
