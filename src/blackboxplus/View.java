@@ -35,15 +35,14 @@ public class View extends Application implements EventHandler<ActionEvent> {
     List<Polyline> rays = new ArrayList<>(); // list for altering all rays (making visible)
     Set<Integer> atomLocs; // list of atom positions
     double hexRadius = 15; // contant determining size of everything
-    int NUMOFATOMS = 4; // constant determining number of guesses
     double edge = (Math.sqrt(3)/2) * 2 * hexRadius;
+    int NUMOFATOMS = 4; // constant determining number of guesses
     public double[][] compass = {{edge, 3*hexRadius},{-edge, 3*hexRadius},{-2*edge, 0},{-edge, -3*hexRadius},{edge, -3*hexRadius},{2*edge, 0}}; // incrementing moves direction clockwise
     Polygon[] guesses = new Polygon[4];
     int numOfGuesses = 0;
-    Button submitGuessButton = new Button();
-    int myin1 = 1;
-    int myin2 = 54;
-    boolean currentlyGuessing = false;
+    Button guessButton, submitGuessButton = new Button();
+    int myin1 = 1, myin2 = 54; // variables tracking label indexes
+    boolean currentlyGuessing = false, finished = false;
     Player player;
     Model myModel; // model for board
 
@@ -51,7 +50,6 @@ public class View extends Application implements EventHandler<ActionEvent> {
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
         baseStackPane.getChildren().addAll(makeBoard()); // add group to stackpane
-        //Button button = setStartButton(); // creates the start button
         baseStackPane.getChildren().add(setGuessButton());
         baseStackPane.getChildren().add(setSubmitGuessButton());
         System.out.println("Click entry points to shoot rays");
@@ -74,7 +72,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         hex.setFill(Color.BLACK);
         hex.setStroke(Color.YELLOW);
         hex.addEventHandler(MouseEvent.MOUSE_CLICKED, mouseEvent -> {
-            if(currentlyGuessing) {
+            if(currentlyGuessing && !finished) {
                 guessAtomLocations(hex);
             }
         });
@@ -95,11 +93,9 @@ public class View extends Application implements EventHandler<ActionEvent> {
         atom.setCenterX(x);
         atom.setCenterY(y);
         atom.setRadius(hexRadius);
-        //radiiOfAtoms.getChildren().addAll(radius);
         g.getChildren().addAll(radius, atom); // add atom and radius to group
         g.setViewOrder(-1); // ensure group is displayed in front of hexagons
         g.setVisible(false); // hide atoms
-        //atomNum++;
         atoms.add(g);
         return g;
     }
@@ -137,8 +133,10 @@ public class View extends Application implements EventHandler<ActionEvent> {
                 for(int i = 0; i < 4; i++){
                     myargs[i] = Integer.parseInt(nums[i]);
                 }
-                myModel.startRay(xto, yto, myargs[0], myargs[1], myargs[2], myargs[3]); // shoot ray
-                player.incrementRaysShot();
+                if(!finished){
+                    myModel.startRay(xto, yto, myargs[0], myargs[1], myargs[2], myargs[3]); // shoot ray
+                    player.incrementRaysShot();
+                }
             }
         });
         g.getChildren().addAll(pl, label);
@@ -178,19 +176,6 @@ public class View extends Application implements EventHandler<ActionEvent> {
             }
         }
         return boardGUI; // return group
-    }
-    private Button setStartButton() { // creates the start button
-        Button startButton = new Button();
-        startButton.setText("Click to start!");
-        startButton.setTranslateY(-200);
-        startButton.setViewOrder(-2);
-        EventHandler<ActionEvent> event = actionEvent -> {
-            Main.startOfGame();
-            startButton.setVisible(false);
-            rayInput();
-        };
-        startButton.setOnAction(event);
-        return startButton;
     }
     private void rayInput() {
         StackPane sPane = new StackPane(); // stackpane for changing alignment
@@ -273,7 +258,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         return outerHexG;
     }
     private Button setGuessButton() {
-        Button guessButton = new Button();
+        guessButton = new Button();
         guessButton.setText("Click to toggle guesses!");
         guessButton.setTranslateY(-250);
         guessButton.setViewOrder(-2);
@@ -290,10 +275,13 @@ public class View extends Application implements EventHandler<ActionEvent> {
         submitGuessButton.setViewOrder(-2);
         submitGuessButton.setVisible(false);
         EventHandler<ActionEvent> event = actionEvent -> {
-            checkIfGuessesCorrect();
-            System.out.println(player.getPlayerInfo()); // Finish for final project
+            checkIfGuessesCorrect(); // calculate incorrect guesses
+            System.out.println(player.getPlayerInfo()); // print score
+            submitGuessButton.setVisible(false);
+            guessButton.setVisible(false); // hide buttons
+            finished = true; // stop from sending more rays
             makeAtomsVisible();
-            showRays();
+            showRays(); // show atoms and rays
         };
         submitGuessButton.setOnAction(event);
         return submitGuessButton;
@@ -314,7 +302,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
             guess.setFill(Color.BLACK);
         }
 
-        if(numOfGuesses == NUMOFATOMS) {
+        if(numOfGuesses == NUMOFATOMS && !finished) {
             submitGuessButton.setVisible(true);
         }
     }
@@ -363,7 +351,9 @@ public class View extends Application implements EventHandler<ActionEvent> {
         Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
         while(myatoms.size() < NUMOFATOMS){myatoms.add(rand.nextInt(61));} // add atoms until done
 
-        this.player = new Player("test");
+        Scanner in = new Scanner(System.in);
+        System.out.println("Enter Name: ");
+        this.player = new Player(in.nextLine());
         this.atomLocs = myatoms;
         this.myModel = new Model(atomLocs, this);
     }
