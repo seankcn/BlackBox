@@ -50,10 +50,6 @@ public class View extends Application implements EventHandler<ActionEvent> {
     public void start(Stage primaryStage) throws Exception {
         Background spBackground = new Background(new BackgroundFill(Color.DARKSLATEGREY, CornerRadii.EMPTY, Insets.EMPTY));
         baseStackPane.getChildren().addAll(makeBoard()); // add group to stackpane
-<<<<<<< HEAD
-        //baseStackPane.getChildren().add(setStartButton()); // creates the start button
-=======
->>>>>>> 875565273e0a28b4749490cd58c2d9d6f0223df3
         baseStackPane.getChildren().add(setGuessButton());
         baseStackPane.getChildren().add(setSubmitGuessButton());
         System.out.println("Click entry points to shoot rays");
@@ -180,37 +176,6 @@ public class View extends Application implements EventHandler<ActionEvent> {
             }
         }
         return boardGUI; // return group
-    }
-<<<<<<< HEAD
-    private Button setStartButton() { // creates the start button
-        Button startButton = new Button();
-        startButton.setText("Click to start!");
-        startButton.setTranslateY(-100);
-        startButton.setViewOrder(-2);
-        EventHandler<ActionEvent> event = actionEvent -> {
-            startButton.setVisible(false);
-            rayInput();
-        };
-        startButton.setOnAction(event);
-        return startButton;
-    }
-=======
->>>>>>> 875565273e0a28b4749490cd58c2d9d6f0223df3
-    private void rayInput() {
-        StackPane sPane = new StackPane(); // stackpane for changing alignment
-        TextField input = new TextField("");
-        input.setViewOrder(-2);
-        input.setMaxWidth(100);
-        input.setLayoutY(200);
-        EventHandler<ActionEvent> event = actionEvent -> {
-            Label label = new Label(input.getText());
-            System.out.println(label.getText());
-            input.clear();
-        };
-        input.setOnAction(event);
-        sPane.getChildren().add(input);
-        sPane.setAlignment(Pos.BOTTOM_CENTER);
-        baseStackPane.getChildren().add(sPane);
     }
     @Override
     public void handle(ActionEvent actionEvent) {} // have to implement this method because of EventHandler
