@@ -4,14 +4,12 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -39,7 +37,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
             {-HEXAGON_SIDE_OFFSET, -3*HEXAGON_RADIUS},
             {HEXAGON_SIDE_OFFSET, -3*HEXAGON_RADIUS},
             {2*HEXAGON_SIDE_OFFSET, 0}};
-    private Group boardGroup = new Group(); // group for hexagons, atoms & rays
+    protected Group boardGroup = new Group(); // group for hexagons, atoms & rays
     private List<Node> atomList = new ArrayList<>(); // list for altering all atoms (making visible)
     private List<Polyline> rayList = new ArrayList<>(); // list for altering all rays (making visible)
     private Set<Integer> atomIndexSet; // set of hexagon indexes where atoms are contained
@@ -69,7 +67,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         primaryStage.setScene(scene);
         primaryStage.show();
     }
-    private Polygon createHexagon(double x, double y){ // create a hexagon with center (x, y)
+    protected Polygon createHexagon(double x, double y){ // create a hexagon with center (x, y)
         Polygon hexagon = new Polygon();
         hexagon.getPoints().addAll(new Double[]{ // set dimensions
                 x, y-(2*HEXAGON_RADIUS),
@@ -88,7 +86,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         hexagon.setViewOrder(0);
         return hexagon;
     }
-    private Parent createAtom(double x, double y){
+    protected Parent createAtom(double x, double y){
         Group g = new Group(); // group together atom and radius
         Circle atom = drawAtom(x, y);
         Circle deflectionField = drawDeflectionField(x, y);
@@ -167,7 +165,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
             gamePlayer.incrementRaysShot();
         }
     }
-    private Parent makeBoard() {
+    protected Parent makeBoard() {
         Integer count = 0;
         double x, y;
         int coordx, coordy;
@@ -265,7 +263,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         }
         return outerHexG;
     }
-    private Button setGuessButton() {
+    Button setGuessButton() {
         guessButton = new Button();
         guessButton.setText("Click to toggle guesses!");
         guessButton.setTranslateY(-250);
@@ -369,4 +367,18 @@ public class View extends Application implements EventHandler<ActionEvent> {
         this.atomIndexSet = gameAtoms;
         this.gameModel = new Model(atomIndexSet, this);
     }
+
+    public View(String playerName) {
+        Random rand = new Random(); // rand for randomly assigning atoms
+        Set<Integer> myatoms = new HashSet<>(); // use set so no duplicate positions
+        while (myatoms.size() < NUMOFATOMS) {
+            myatoms.add(rand.nextInt(61)); // add atoms until done
+        }
+
+        this.gamePlayer = new Player(playerName);
+        this.atomIndexSet = myatoms;
+        this.gameModel = new Model(atomIndexSet, this);
+    }
+
+
 }

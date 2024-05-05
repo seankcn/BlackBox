@@ -32,4 +32,16 @@ public class Player {
     public String getPlayerInfo() { // just for tests for now
         return getPlayerName() + " had a score of " + score + " points with " + raysShot + " rays shot in total and " + atomsMissed + " atoms misplaced!";
     }
+
+    public int getScore() {
+        return score;
+    }
+
+    public int getRaysShot() {
+        return raysShot;
+    }
+
+    public int getAtomsMissed() {
+        return atomsMissed;
+    }
 }

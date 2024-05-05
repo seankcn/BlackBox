@@ -29,7 +29,7 @@ public class Model {
         }
         return newDirectionIndex;
     }
-    private void createBoard(Set<Integer> myatoms){
+    protected void createBoard(Set<Integer> myatoms){
         Integer hexagonCount = 0;
         int x, y;
         fillBoardWithN();
@@ -57,7 +57,7 @@ public class Model {
             Arrays.fill(board[i], 'n');
         }
     }
-    private void makeFields(final char[][] list){ // add fields to board model
+    protected void makeFields(final char[][] list){ // add fields to board model
         for(int i = 1; i < list.length-1; i++){
             for(int j = 1; j < list.length-1; j++){
                 if(list[i][j] == 'a'){
@@ -107,7 +107,7 @@ public class Model {
         return rayPoints;
     }
 
-    private List<Integer> shootRay(int x, int y, int i, int j){ // function for shooting ray with direction [i,j] from position [x,y]
+    protected List<Integer> shootRay(int x, int y, int i, int j){ // function for shooting ray with direction [i,j] from position [x,y]
         List<Integer> rayPoints = new ArrayList<>();
         int directionIndex = getDirectionIndex(i, j);
 
@@ -139,5 +139,14 @@ public class Model {
     public Model(Set<Integer> atomLoc, View gameView){
         createBoard(atomLoc);
         this.gameView = gameView; // store view for GUI manipulation
+    }
+    public Model(){ // model constructor for unit tests
+    }
+    public Model(char[][] b){ // model constructor for unit tests
+        board = b; //initialises board to be tested
+    }
+
+    public char[][] getBoard() {
+        return board;
     }
 }
