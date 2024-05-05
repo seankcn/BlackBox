@@ -4,44 +4,60 @@ import java.util.*;
 import static java.lang.Math.abs;
 
 public class Model {
-    View myGUI; // store view in order to call GUI functions
-    List<Integer> rayPoints; // list to store ray movements through recursive functions
-    char[][] board = new char[11][11]; // board model
-    public int[][] sundial = {{1,1}, {1,0}, {0,-1}, {-1,-1}, {-1, 0}, {0, 1}}; // incrementing shifts direction clockwise in model
-    public int getDirection(int i, int j){ // translates [i,j] board direction from model into compass index
-        int dir;
-        for(dir = 0; dir < sundial.length; dir++){
-            if(sundial[dir][0] == i && sundial[dir][1] == j){ // find the index of the direction
-                return dir;
+    public static int[][] MODEL_DIRECTIONS = { // incrementing shifts direction clockwise
+            {1,1}, {1,0}, {0,-1}, 
+            {-1,-1}, {-1, 0}, {0, 1}};
+    private View gameView; // store view in order to call GUI functions
+    private char[][] board = new char[11][11]; // board model
+
+    public int getDirectionIndex(int x, int y){
+        int directionIndex = -1;
+        for(int n = 0; n < MODEL_DIRECTIONS.length; n++){
+            if(MODEL_DIRECTIONS[n][0] == x && MODEL_DIRECTIONS[n][1] == y){
+                directionIndex = n;
             }
         }
-        return -1;
+        return directionIndex;
     }
-    public void createBoard(Set<Integer> myatoms){
-        for(int i = 0; i < board.length; i++) { Arrays.fill(board[i], 'n'); } // fill board model
-        Integer count = 0;
-        int coordx, coordy;
+    public int turnIndexClockwise(int directionIndex, int turns){
+        int newDirectionIndex = directionIndex + turns;
+        while(newDirectionIndex < 0){
+            newDirectionIndex += 6;
+        }
+        while(newDirectionIndex > 5){
+            newDirectionIndex -= 6;
+        }
+        return newDirectionIndex;
+    }
+    private void createBoard(Set<Integer> myatoms){
+        Integer hexagonCount = 0;
+        int x, y;
+        fillBoardWithN();
         for(int i = 0; i < 9; i++) { // iterate through rows
             double k = 4 - Math.abs(4-i); // find how many columns for this row
             for (double j = 0; j < 5+k; j++) { // iterate through columns
-                coordx = i;
+                x = i;
                 if(i < 5) {
-                    coordy = (int) j;
+                    y = (int) j;
                 }else{
-                    coordy = (int) (j-k+4);
+                    y = (int) (j-k+4);
                 }
 
-                if(myatoms.contains(count)){ // if atom should be here
-                    board[coordx+1][coordy+1] = 'a';
+                if(myatoms.contains(hexagonCount++)){ // if atom should be here
+                    board[x+1][y+1] = 'a'; // increment x and y to give 1 line 'n' buffer around outside of model
                 }else{
-                    board[coordx+1][coordy+1] = 'e'; // populate model with empty hexagons
+                    board[x+1][y+1] = 'e'; // populate model with empty hexagons
                 }
-                count++;
             }
         }
         makeFields(board);
     }
-    public void makeFields(final char[][] list){ // add fields to board model
+    private void fillBoardWithN(){
+        for(int i = 0; i < board.length; i++) {
+            Arrays.fill(board[i], 'n');
+        }
+    }
+    private void makeFields(final char[][] list){ // add fields to board model
         for(int i = 1; i < list.length-1; i++){
             for(int j = 1; j < list.length-1; j++){
                 if(list[i][j] == 'a'){
@@ -55,21 +71,13 @@ public class Model {
             }
         }
     }
-    public void deflectRay(int x, int y, int i, int j){
-        int dir = getDirection(i, j); // find index of direction
+    private List<Integer> deflectRay(int x, int y, int i, int j){
+        List<Integer> rayPoints = new ArrayList<>();
+        int directionIndex = getDirectionIndex(i, j); // find index of direction
         int rotations = 0, newdir, newi, newj;
 
-        int[] anticlockwise, clockwise; // find directions either side in front of ray
-        if(dir == 0){
-            clockwise = sundial[dir+1];
-            anticlockwise = sundial[5];
-        }else if(dir == 5){
-            clockwise = sundial[0];
-            anticlockwise = sundial[dir-1];
-        }else{
-            clockwise = sundial[dir+1];
-            anticlockwise = sundial[dir-1];
-        }
+        int[] anticlockwise = MODEL_DIRECTIONS[turnIndexClockwise(directionIndex, -1)];
+        int[] clockwise = MODEL_DIRECTIONS[turnIndexClockwise(directionIndex, 1)];
 
         if(board[x+anticlockwise[0]][y+anticlockwise[1]] == 'a'){ // if atom at anticlockwise hex
             rotations = 1; // turn 60 degrees clockwise
@@ -85,54 +93,51 @@ public class Model {
             if(abs(rotations) == 1){ // and 1 other atom in clockwise OR anticlockwise hex
                 rotations *= 2; // turn 120 degrees in whichever direction you were already turning
             }else if(rotations == 0) { // if no other atoms
-                rayPoints.add(dir); // add point to ray
+                rayPoints.add(directionIndex); // add point to ray
                 System.out.println("Direct Hit");
-                return; // done
+                return rayPoints; // done
             }
         }
         if(rotations == 0){rotations = 3;} // if in field with no atom in front means edge of board, so turn 180
-        if(dir+rotations < 0){ // apply rotations to current direction
-            newdir = 6 + rotations;
-        }else if(dir+rotations > 5){
-            newdir = dir+rotations-6;
-        }else{
-            newdir = dir+rotations;
-        }
-        newi = sundial[newdir][0]; // find new i and j direction
-        newj = sundial[newdir][1];
+        newdir = turnIndexClockwise(directionIndex, rotations);
+        newi = MODEL_DIRECTIONS[newdir][0]; // find new i and j direction
+        newj = MODEL_DIRECTIONS[newdir][1];
         rayPoints.add(newdir); // add new point to ray
-        shootRay(x+newi, y+newj, newi, newj); // shoot new ray
+        rayPoints.addAll(shootRay(x+newi, y+newj, newi, newj)); // shoot new ray
+        return rayPoints;
     }
 
-    public void shootRay(int x, int y, int i, int j){ // function for shooting ray with direction [i,j] from position [x,y]
-        int xpos = x;
-        int ypos = y;
-        int dir = getDirection(i, j); // get index of direction
+    private List<Integer> shootRay(int x, int y, int i, int j){ // function for shooting ray with direction [i,j] from position [x,y]
+        List<Integer> rayPoints = new ArrayList<>();
+        int directionIndex = getDirectionIndex(i, j);
 
-        while(board[xpos][ypos] == 'e'){ // while at an empty hexagon
-            xpos+=i; // move
-            ypos+=j;
-            rayPoints.add(dir); // add new point to ray movements
+        while(board[x][y] == 'e'){ // while at an empty hexagon
+            x += i;
+            y += j;
+            rayPoints.add(directionIndex); // add new point to ray movements
         }
-        if(board[xpos][ypos] == 'n'){ // if at null space, then exited
-            System.out.println("Exited at position " + (xpos-1) + "," + (ypos-1));
+        if(board[x][y] == 'n'){ // if at null space, then exited
+            System.out.println("Exited at position " + (x-1) + "," + (y-1));
         }
-        if(board[xpos][ypos] == 'f'){ // hit field
-            deflectRay(xpos, ypos, i, j); // call function to execute ray deflection
+        if(board[x][y] == 'f'){ // hit field
+            rayPoints.addAll(deflectRay(x, y, i, j)); // call function to execute ray deflection
         }
-        if(board[xpos][ypos] == 'a'){ // hit atom
+        if(board[x][y] == 'a'){ // hit atom
             System.out.println("Direct Hit");
         }
+        return rayPoints;
     }
-    public void startRay(double realX, double realY, int x, int y, int i, int j){ // function for creating ray components
-        rayPoints = new ArrayList<>(); // new list for ray movements
-        int dir = getDirection(i, j); // get direction ray is being sent
-        rayPoints.add(dir); // add to list (so ray appears outside of box initially)
-        shootRay(x+1, y+1, i, j); // shoot ray
-        myGUI.createRayGUI(realX-myGUI.compass[dir][0], realY-myGUI.compass[dir][1], rayPoints); // display ray
+    public void startRay(double guiStartX, double guiStartY, int x, int y, int i, int j){ // function for creating ray components
+        List<Integer> rayPoints = new ArrayList<>();
+        int startingDirection = getDirectionIndex(i, j);
+        rayPoints.add(startingDirection); // add starting direction to list (so ray appears outside of box initially)
+        rayPoints.addAll(shootRay(x+1, y+1, i, j));
+        guiStartX -= gameView.GUI_DIRECTIONS[startingDirection][0];
+        guiStartY -= gameView.GUI_DIRECTIONS[startingDirection][1]; // set starting x and y outside of box
+        gameView.createRayGUI(guiStartX, guiStartY, rayPoints); // display ray
     }
-    public Model(Set<Integer> atomLoc, View myGUI){ // model constructor
-        createBoard(atomLoc); // create board with atoms
-        this.myGUI = myGUI; // store view for GUI manipulation
+    public Model(Set<Integer> atomLoc, View gameView){
+        createBoard(atomLoc);
+        this.gameView = gameView; // store view for GUI manipulation
     }
 }
