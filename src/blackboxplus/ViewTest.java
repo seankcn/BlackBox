@@ -34,7 +34,7 @@ public class ViewTest {
         double centerY = 100.0;
 
         View view = new View("Sean");
-        Polygon hexagon = view.createHex(centerX, centerY);
+        Polygon hexagon = view.createHexagon(centerX, centerY);
 
         //check if hex has same number of vertices
         assertEquals(6, hexagon.getPoints().size() / 2);
@@ -77,7 +77,7 @@ public class ViewTest {
         Group boardGroup = (Group) view.makeBoard();
 
         assertNotNull(boardGroup); //board must exist
-        assertEquals(180, view.boardGUI.getChildren().size()); //total num of children
+        assertEquals(180, view.boardGroup.getChildren().size()); //total num of children
 
         //count hex and labels
         int numHex = 0;
