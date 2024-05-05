@@ -135,4 +135,14 @@ public class Model {
         createBoard(atomLoc); // create board with atoms
         this.myGUI = myGUI; // store view for GUI manipulation
     }
+    public Model(){ // model constructor for unit tests
+    }
+    public Model(char[][] b){ // model constructor for unit tests
+        board = b; //initialises board to be tested
+        rayPoints = new ArrayList<>();
+    }
+
+    public char[][] getBoard() {
+        return board;
+    }
 }

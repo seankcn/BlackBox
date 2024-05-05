@@ -4,14 +4,12 @@ import javafx.application.Application;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.geometry.Insets;
-import javafx.geometry.Pos;
 import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Background;
 import javafx.scene.layout.BackgroundFill;
@@ -241,7 +239,7 @@ public class View extends Application implements EventHandler<ActionEvent> {
         }
         return outerHexG;
     }
-    private Button setGuessButton() {
+    Button setGuessButton() {
         guessButton = new Button();
         guessButton.setText("Click to toggle guesses!");
         guessButton.setTranslateY(-250);
@@ -341,4 +339,18 @@ public class View extends Application implements EventHandler<ActionEvent> {
         this.atomLocs = myatoms;
         this.myModel = new Model(atomLocs, this);
     }
+
+    public View(String playerName) {
+        Random rand = new Random(); // rand for randomly assigning atoms
+        Set<Integer> myatoms = new HashSet<Integer>(); // use set so no duplicate positions
+        while (myatoms.size() < NUMOFATOMS) {
+            myatoms.add(rand.nextInt(61)); // add atoms until done
+        }
+
+        this.player = new Player(playerName);
+        this.atomLocs = myatoms;
+        this.myModel = new Model(atomLocs, this);
+    }
+
+
 }
